@@ -75,6 +75,36 @@ func (api *Sms77API) Contacts(p ContactsParams) (*string, error) {
 	return &res, nil
 }
 
+func (api *Sms77API) Hooks(p HooksParams) (interface{}, error) {
+	method := "POST"
+	if p.Action == HooksActionRead {
+		method = "GET"
+	}
+
+	res, err := api.request("hooks", method, p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var js interface{}
+
+	switch p.Action {
+	case HooksActionRead:
+		js = &HooksReadResponse{}
+	case HooksActionSubscribe:
+		js = &HooksSubscribeResponse{}
+	case HooksActionUnsubscribe:
+		js = &HooksUnsubscribeResponse{}
+	}
+
+	if err := json.Unmarshal([]byte(res), js); err != nil {
+		return nil, err
+	}
+
+	return js, nil
+}
+
 func (api *Sms77API) Lookup(p LookupParams) (interface{}, error) {
 	res, err := api.request("lookup", "GET", p)
 

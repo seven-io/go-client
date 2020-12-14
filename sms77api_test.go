@@ -1,11 +1,14 @@
 package sms77api
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -13,16 +16,6 @@ const (
 )
 
 var client = New(os.Getenv("SMS77_API_KEY"))
-
-func TestNew(t *testing.T) {
-	name := reflect.TypeOf(Sms77Api{
-		apiKey: "",
-	}).Name()
-
-	if name != "Sms77API" {
-		t.Errorf("Unexpected struct, got %s wanted %s", name, "Sms77API")
-	}
-}
 
 func AssertIsPositive(propertyName string, number interface{}, t *testing.T) bool {
 	invalid := false
@@ -43,6 +36,22 @@ func AssertIsPositive(propertyName string, number interface{}, t *testing.T) boo
 	return invalid
 }
 
+func AssertIsTrue(propertyName string, value interface{}, t *testing.T) bool {
+	if true != value {
+		t.Errorf("%s should be true, but is not", propertyName)
+	}
+
+	return true
+}
+
+func AssertIsFalse(propertyName string, value interface{}, t *testing.T) bool {
+	if false != value {
+		t.Errorf("%s should be false, but is not", propertyName)
+	}
+
+	return true
+}
+
 func AssertIsLengthy(propertyName string, string string, t *testing.T) bool {
 	if len(string) == 0 {
 		t.Errorf("string %s should not be empty", propertyName)
@@ -51,6 +60,33 @@ func AssertIsLengthy(propertyName string, string string, t *testing.T) bool {
 	}
 
 	return true
+}
+
+func AssertInArray(property string, needle interface{}, haystack interface{}, t *testing.T) bool {
+	slice := reflect.ValueOf(haystack)
+	c := slice.Len()
+
+	for i := 0; i < c; i++ {
+		if needle == slice.Index(i).Interface() {
+			return true
+		}
+	}
+
+	t.Errorf("property %s with value %s should be included in %s", property, needle, slice)
+
+	return false
+}
+
+func TestNew(t *testing.T) {
+	const expected = "Sms77API"
+
+	name := reflect.TypeOf(client).Name()
+
+	if name != expected {
+		t.Errorf("Unexpected struct, got %s wanted %s", name, expected)
+	}
+
+	AssertIsLengthy("apiKey", client.apiKey, t)
 }
 
 func TestSms77API_Analytics(t *testing.T) {
@@ -128,6 +164,56 @@ func TestSms77API_Contacts(t *testing.T) {
 
 	for _, csvContact := range strings.Split(strings.TrimSpace(*res), "\n") {
 		assertContact(toStruct(csvContact))
+	}
+}
+
+func TestSms77API_Hooks(t *testing.T) {
+	request := func(params HooksParams) interface{} {
+		res, err := client.Hooks(params)
+
+		log.Print(res)
+
+		if err != nil {
+			t.Errorf("Hooks() should not return an error, but %s", err)
+		}
+
+		if res == nil {
+			t.Errorf("Hooks() should return json, but received nil")
+		}
+
+		return res
+	}
+
+	hooks := request(HooksParams{Action: HooksActionRead}).(*HooksReadResponse)
+
+	if hooks.Success && hooks.Hooks != nil {
+		for _, hook := range hooks.Hooks {
+			AssertIsLengthy("Created", hook.Created, t)
+			AssertIsLengthy("Id", hook.Id, t)
+			AssertIsLengthy("TargetUrl", hook.TargetUrl, t)
+			AssertInArray("EventType", hook.EventType,
+				[...]HookEventType{HookEventTypeSmsStatus, HookEventTypeVoiceStatus, HookEventTypeInboundSms}, t)
+			AssertInArray("RequestMethod", hook.RequestMethod,
+				[...]HookRequestMethod{HookRequestMethodGet, HookRequestMethodPost}, t)
+		}
+	}
+
+	subscribed := request(HooksParams{
+		Action:        HooksActionSubscribe,
+		EventType:     HookEventTypeInboundSms,
+		RequestMethod: HookRequestMethodGet,
+		TargetUrl:     fmt.Sprintf("https://test.tld/go-client/%d", time.Now().Unix()),
+	}).(*HooksSubscribeResponse)
+
+	AssertIsPositive("Id", subscribed.Id, t)
+
+	if true == subscribed.Success {
+		subscribed := request(HooksParams{
+			Action: HooksActionUnsubscribe,
+			Id:     subscribed.Id,
+		}).(*HooksUnsubscribeResponse)
+
+		AssertIsTrue("Success", subscribed.Success, t)
 	}
 }
 

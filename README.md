@@ -1,5 +1,5 @@
-![](https://www.sms77.io/wp-content/uploads/2019/07/sms77-Logo-400x79.png "Sms77.io Logo")
-# sms77io SMS Gateway API Client
+![Sms77.io Logo](https://www.sms77.io/wp-content/uploads/2019/07/sms77-Logo-400x79.png "Sms77.io Logo")
+# Official API Client for the Sms77.io SMS Gateway 
 
 ## Installation
 
@@ -22,3 +22,7 @@ func main() {
 	}
 }
 ```
+
+#### Support
+
+Got stuck? Feel free to contact us via mail at <a href='mailto: support@sms77.io'>support@sms77.io</a>.
