@@ -15,9 +15,22 @@ const (
 	VinTelekom = "+4915126716517"
 )
 
-var client = New(os.Getenv("SMS77_API_KEY"))
+var client, dummy = GetClient()
 
-func AssertIsPositive(propertyName string, number interface{}, t *testing.T) bool {
+func GetClient() (*Sms77API, bool) {
+	var dummy = true
+	var apiKey = os.Getenv("SMS77_DUMMY_API_KEY")
+
+	if "" == apiKey {
+		apiKey = os.Getenv("SMS77_API_KEY")
+
+		dummy = false
+	}
+
+	return New(apiKey), dummy
+}
+
+func AssertIsPositive(descriptor string, number interface{}, t *testing.T) bool {
 	invalid := false
 
 	switch number.(type) {
@@ -30,31 +43,31 @@ func AssertIsPositive(propertyName string, number interface{}, t *testing.T) boo
 	}
 
 	if invalid {
-		t.Errorf("%s should be positive, but got %f", propertyName, number)
+		t.Errorf("%s should be positive, but got %f", descriptor, number)
 	}
 
 	return invalid
 }
 
-func AssertIsTrue(propertyName string, value interface{}, t *testing.T) bool {
+func AssertIsTrue(descriptor string, value interface{}, t *testing.T) bool {
 	if true != value {
-		t.Errorf("%s should be true, but is not", propertyName)
+		t.Errorf("%s should be true, but is not", descriptor)
 	}
 
 	return true
 }
 
-func AssertIsFalse(propertyName string, value interface{}, t *testing.T) bool {
-	if false != value {
-		t.Errorf("%s should be false, but is not", propertyName)
+func AssertIsNil(descriptor string, value interface{}, t *testing.T) bool {
+	if nil != value {
+		t.Errorf("%s should be nil, but is not", descriptor)
 	}
 
 	return true
 }
 
-func AssertIsLengthy(propertyName string, string string, t *testing.T) bool {
-	if len(string) == 0 {
-		t.Errorf("string %s should not be empty", propertyName)
+func AssertIsLengthy(descriptor string, value string, t *testing.T) bool {
+	if len(value) == 0 {
+		t.Errorf("string %s should not be empty", descriptor)
 
 		return false
 	}
@@ -62,7 +75,17 @@ func AssertIsLengthy(propertyName string, string string, t *testing.T) bool {
 	return true
 }
 
-func AssertInArray(property string, needle interface{}, haystack interface{}, t *testing.T) bool {
+func AssertEquals(descriptor string, actual interface{}, expected interface{}, t *testing.T) bool {
+	if expected != actual {
+		t.Errorf("%s should match %v but received %v", descriptor, expected, actual)
+
+		return false
+	}
+
+	return true
+}
+
+func AssertInArray(descriptor string, needle interface{}, haystack interface{}, t *testing.T) bool {
 	slice := reflect.ValueOf(haystack)
 	c := slice.Len()
 
@@ -72,7 +95,7 @@ func AssertInArray(property string, needle interface{}, haystack interface{}, t 
 		}
 	}
 
-	t.Errorf("property %s with value %s should be included in %s", property, needle, slice)
+	t.Errorf("%s with value %s should be included in %s", descriptor, needle, slice)
 
 	return false
 }
@@ -90,27 +113,26 @@ func TestNew(t *testing.T) {
 }
 
 func TestSms77API_Analytics(t *testing.T) {
-	res, err := client.Analytics(&AnalyticsParams{})
+	res, err := client.Analytics.Get(&AnalyticsParams{})
 
 	if err != nil {
 		t.Errorf("Analytics() should not return an error, but %s", err)
 	}
 
 	for _, analytics := range res {
-		AssertIsPositive("UsageEur", analytics.UsageEur, t)
-		AssertIsPositive("Hlr", analytics.Hlr, t)
+		AssertIsLengthy("Date", *analytics.Date, t)
 		AssertIsPositive("Direct", analytics.Direct, t)
 		AssertIsPositive("Economy", analytics.Economy, t)
+		AssertIsPositive("Hlr", analytics.Hlr, t)
 		AssertIsPositive("Inbound", analytics.Inbound, t)
 		AssertIsPositive("Mnp", analytics.Mnp, t)
+		AssertIsPositive("UsageEur", analytics.UsageEur, t)
 		AssertIsPositive("Voice", analytics.Voice, t)
-
-		AssertIsLengthy("Date", *analytics.Date, t)
 	}
 }
 
 func TestSms77API_Balance(t *testing.T) {
-	res, err := client.Balance()
+	res, err := client.Balance.Get()
 
 	if err != nil {
 		t.Errorf("Balance() should not return an error, but %s", err)
@@ -152,7 +174,7 @@ func TestSms77API_Contacts(t *testing.T) {
 		}
 	}
 
-	res, err := client.Contacts(ContactsParams{Action: "read"})
+	res, err := client.Contacts.ReadCsv(ContactsReadParams{})
 
 	if err != nil {
 		t.Errorf("Contacts() should not return an error, but %s", err)
@@ -169,7 +191,7 @@ func TestSms77API_Contacts(t *testing.T) {
 
 func TestSms77API_Hooks(t *testing.T) {
 	request := func(params HooksParams) interface{} {
-		res, err := client.Hooks(params)
+		res, err := client.Hooks.Request(params)
 
 		log.Print(res)
 
@@ -227,7 +249,7 @@ func TestSms77API_Lookup(t *testing.T) {
 			params.Json = true
 		}
 
-		res, err := client.Lookup(params)
+		res, err := client.Lookup.Post(params)
 
 		if err != nil {
 			t.Errorf("Lookup() should not return an error, but %s", err)
@@ -295,103 +317,116 @@ func TestSms77API_Lookup(t *testing.T) {
 }
 
 func TestSms77API_Pricing(t *testing.T) {
-	assert := func(format string) {
-		r, e := client.Pricing(PricingParams{Country: "de", Format: format})
+	var pricingParams = PricingParams{Country: "de"}
 
-		if e != nil {
-			t.Errorf("Pricing() should not return an error, but %s", e)
-		}
+	var json, jsonError = client.Pricing.Json(pricingParams)
+	if nil == jsonError {
+		AssertIsNil("jsonError", jsonError, t)
+		AssertIsPositive("CountCountries", json.CountCountries, t)
+		AssertIsPositive("CountNetworks", json.CountNetworks, t)
 
-		switch res := r.(type) {
-		case string:
-			AssertIsLengthy("res", res, t)
-		case PricingResponse:
-			AssertIsPositive("CountCountries", res.CountCountries, t)
-			AssertIsPositive("CountNetworks", res.CountNetworks, t)
+		for n, country := range json.Countries {
+			AssertIsLengthy(fmt.Sprintf("Country[%d].CountryCode", n), country.CountryCode, t)
+			AssertIsLengthy(fmt.Sprintf("Country[%d].CountryName", n), country.CountryName, t)
+			AssertIsLengthy(fmt.Sprintf("Country[%d].CountryPrefix", n), country.CountryPrefix, t)
 
-			for _, country := range res.Countries {
-				AssertIsLengthy("Country[n].CountryCode", country.CountryCode, t)
-				AssertIsLengthy("Country[n].CountryName", country.CountryName, t)
-				AssertIsLengthy("Country[n].CountryPrefix", country.CountryPrefix, t)
-
-				for _, network := range country.Networks {
-					AssertIsLengthy("Country.Network[n].NetworkName", network.NetworkName, t)
-					AssertIsPositive("Country.Network[n].Price", network.Price, t)
-				}
+			for nn, network := range country.Networks {
+				AssertIsLengthy(fmt.Sprintf("Country[%d].Network[%d].NetworkName", n, nn), network.NetworkName, t)
+				AssertIsPositive(fmt.Sprintf("Country[%d].Network[%d].Price", n, nn), network.Price, t)
 			}
-		default:
-			t.Errorf("Pricing() should return JSON or CSV, but received nil")
 		}
+	} else {
+		AssertEquals("res", json, "", t)
 	}
 
-	assert("json")
-
-	assert("csv")
+	var csv, csvErr = client.Pricing.Csv(pricingParams)
+	if nil == csvErr {
+		AssertIsLengthy("res", csv, t)
+	} else {
+		AssertEquals("res", csv, "", t)
+	}
 }
 
 func TestSms77API_Sms(t *testing.T) {
-	sms := func(json bool) interface{} {
-		params := SmsParams{
-			To:   VinTelekom,
-			Text: "Hey friend",
-			From: "Go-Test",
-		}
-
-		if json {
-			params.Json = true
-		}
-
-		res, err := client.Sms(params)
-
-		if err != nil {
-			t.Errorf("Sms() should not return an error, but %s", err)
-		}
-
-		if res == nil {
-			t.Errorf("Sms() should not be nil")
-		}
-
-		return res
+	baseParams := SmsBaseParams{
+		Debug:               true,
+		Delay:               strconv.FormatInt(time.Now().Unix(), 10),
+		Flash:               true,
+		ForeignId:           "GoTestForeignId",
+		From:                "Go-Test",
+		Label:               "GoTestLabel",
+		NoReload:            false,
+		PerformanceTracking: true,
+		Text:                "Hey friend",
+		To:                  VinTelekom,
+		Ttl:                 320000,
+		Udh:                 "GoTestUserDataHeader",
+		Unicode:             false,
+		Utf8:                false,
 	}
 
-	res := sms(true).(SmsResponse)
-
-	AssertIsLengthy("Success", res.Success, t)
-	AssertIsLengthy("Debug", res.Debug, t)
-	AssertIsLengthy("SmsType", res.SmsType, t)
-	AssertIsPositive("Balance", res.Balance, t)
-	if len(res.Messages) == 0 {
-		t.Errorf("Messages should not be empty")
+	json, jsonError := client.Sms.Json(baseParams)
+	if nil == jsonError {
+		AssertIsLengthy("Success", json.Success, t)
+		AssertIsLengthy("Debug", json.Debug, t)
+		AssertIsLengthy("SmsType", json.SmsType, t)
+		AssertIsPositive("Balance", json.Balance, t)
+		if len(json.Messages) == 0 {
+			t.Errorf("Messages should not be empty")
+		}
+		AssertIsPositive("TotalPrice", json.TotalPrice, t)
+	} else {
+		AssertEquals("json", json, nil, t)
 	}
-	AssertIsPositive("TotalPrice", res.TotalPrice, t)
+
+	csv, csvError := client.Sms.Text(SmsTextParams{
+		Details:         true,
+		ReturnMessageId: true,
+		SmsBaseParams:   baseParams,
+	})
+	if nil == csvError {
+		AssertIsLengthy("csv", *csv, t)
+	} else {
+		AssertEquals("csv", csv, nil, t)
+	}
 }
 
 func TestSms77API_Status(t *testing.T) {
-	res, err := client.Status(StatusParams{MessageId: 77130164658})
+	assert := func(messageId int64) []string {
+		status, err := client.Status.Post(StatusParams{MessageId: messageId})
+		var lines []string
 
-	if err != nil {
-		t.Errorf("Status() should not return an error, but %s", err)
+		if nil == err {
+			lines = strings.Split(*status, "\n")
+		} else {
+			AssertEquals("status", status, nil, t)
+		}
+
+		return lines
 	}
 
-	if res == nil {
-		t.Errorf("Status() should not return nil")
-	}
-
-	lines := strings.Split(*res, "\n")
+	lines := assert(77131931120)
 	AssertIsLengthy("CODE", lines[0], t)
 	AssertIsLengthy("DATETIME", lines[1], t)
+
+	lines = assert(0)
+	AssertEquals("API_CODE", lines[0], "901", t)
 }
 
 func TestSms77API_ValidateForVoice(t *testing.T) {
-	res, err := client.ValidateForVoice(ValidateForVoiceParams{Number: VinTelekom})
+	res, err := client.ValidateForVoice.Get(ValidateForVoiceParams{Number: VinTelekom})
 
 	if err != nil {
 		t.Errorf("ValidateForVoice() should not return an error, but %s", err)
 	}
 
-	_, err = strconv.Atoi(res.Code)
-	if err != nil {
-		t.Errorf("Code should be numeric, but %s", err)
+	if dummy {
+		AssertIsTrue("success", res.Success, t)
+	} else {
+		_, err = strconv.Atoi(res.Code)
+		if err != nil {
+			t.Errorf("Code should be numeric, but %s", err)
+		}
 	}
 }
 
@@ -402,7 +437,7 @@ func TestSms77API_Voice(t *testing.T) {
 			params.Xml = true
 		}
 
-		res, err := client.Voice(params)
+		res, err := client.Voice.Post(params)
 
 		if err != nil {
 			t.Errorf("Voice() should not return an error, but %s", err)

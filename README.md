@@ -3,22 +3,25 @@
 
 ## Installation
 
+Requires Go 1.11+ for modules support.
+
 ```go get github.com/sms77io/go-client```
 
 ### Usage
+
 ```go
 package main
 
-import (``
+import (
 	"fmt"
-	Client "github.com/sms77io/go-client"
+	"github.com/sms77io/go-client"
 )
 
 func main() {
-	var client = Client.New("MySuperSecretSms77ApiKey!")
-	var balance, err = client.Balance()
+	var client = Sms77API.New("MySuperSecretSms77ApiKey!")
+	var balance, err = client.Balance.Get()
 	if err == nil {
-		fmt.Sprintf("Balance: %f", balance)
+		fmt.Printf("Balance: %f", balance)
 	}
 }
 ```
