@@ -21,6 +21,7 @@ type Sms77API struct {
 	Balance          *BalanceResource
 	Contacts         *ContactsResource
 	Hooks            *HooksResource
+	Journal           *JournalResource
 	Lookup           *LookupResource
 	Pricing          *PricingResource
 	Sms              *SmsResource
@@ -47,6 +48,7 @@ func New(apiKey string) *Sms77API {
 	c.Balance = (*BalanceResource)(&c.base)
 	c.Contacts = (*ContactsResource)(&c.base)
 	c.Hooks = (*HooksResource)(&c.base)
+	c.Journal = (*JournalResource)(&c.base)
 	c.Lookup = (*LookupResource)(&c.base)
 	c.Pricing = (*PricingResource)(&c.base)
 	c.Sms = (*SmsResource)(&c.base)

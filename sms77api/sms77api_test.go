@@ -239,6 +239,32 @@ func TestSms77API_Hooks(t *testing.T) {
 	}
 }
 
+func TestSms77API_Journal(t *testing.T) {
+	request := func(journals interface{}, err error) interface{} {
+		if nil != err {
+			fmt.Printf("ERROR: %#v", err)
+
+			AssertEquals("journals", journals, nil, t)
+		}
+
+		return journals
+	}
+
+	request(client.Journal.Inbound(&JournalParams{}))
+
+	for _, journal := range request(client.Journal.Outbound(&JournalParams{})).([]JournalOutbound) {
+		AssertIsLengthy("Connection", journal.Connection, t)
+		AssertIsLengthy("Type", journal.Type, t)
+	}
+
+	request(client.Journal.Replies(&JournalParams{}))
+
+	for _, journal := range request(client.Journal.Voice(&JournalParams{})).([]JournalVoice) {
+		AssertIsLengthy("Duration", journal.Duration, t)
+		AssertIsLengthy("Status", journal.Status, t)
+	}
+}
+
 func TestSms77API_Lookup(t *testing.T) {
 	lookup := func(typ string, json bool) interface{} {
 		params := LookupParams{
