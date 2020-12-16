@@ -3,102 +3,12 @@ package sms77api
 import (
 	"fmt"
 	"log"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
-
-const (
-	VinTelekom = "+4915126716517"
-)
-
-var client, dummy = GetClient()
-
-func GetClient() (*Sms77API, bool) {
-	var dummy = true
-	var apiKey = os.Getenv("SMS77_DUMMY_API_KEY")
-
-	if "" == apiKey {
-		apiKey = os.Getenv("SMS77_API_KEY")
-
-		dummy = false
-	}
-
-	return New(apiKey), dummy
-}
-
-func AssertIsPositive(descriptor string, number interface{}, t *testing.T) bool {
-	invalid := false
-
-	switch number.(type) {
-	case int:
-		invalid = number.(int) < 0
-	case float32:
-		invalid = number.(float32) < 0
-	case float64:
-		invalid = number.(float64) < 0
-	}
-
-	if invalid {
-		t.Errorf("%s should be positive, but got %f", descriptor, number)
-	}
-
-	return invalid
-}
-
-func AssertIsTrue(descriptor string, value interface{}, t *testing.T) bool {
-	if true != value {
-		t.Errorf("%s should be true, but is not", descriptor)
-	}
-
-	return true
-}
-
-func AssertIsNil(descriptor string, value interface{}, t *testing.T) bool {
-	if nil != value {
-		t.Errorf("%s should be nil, but is not", descriptor)
-	}
-
-	return true
-}
-
-func AssertIsLengthy(descriptor string, value string, t *testing.T) bool {
-	if len(value) == 0 {
-		t.Errorf("string %s should not be empty", descriptor)
-
-		return false
-	}
-
-	return true
-}
-
-func AssertEquals(descriptor string, actual interface{}, expected interface{}, t *testing.T) bool {
-	if expected != actual {
-		t.Errorf("%s should match %v but received %v", descriptor, expected, actual)
-
-		return false
-	}
-
-	return true
-}
-
-func AssertInArray(descriptor string, needle interface{}, haystack interface{}, t *testing.T) bool {
-	slice := reflect.ValueOf(haystack)
-	c := slice.Len()
-
-	for i := 0; i < c; i++ {
-		if needle == slice.Index(i).Interface() {
-			return true
-		}
-	}
-
-	t.Errorf("%s with value %s should be included in %s", descriptor, needle, slice)
-
-	return false
-}
 
 func TestNew(t *testing.T) {
 	const expected = "Sms77API"
@@ -143,50 +53,6 @@ func TestSms77API_Balance(t *testing.T) {
 	}
 
 	AssertIsPositive("Balance()", res, t)
-}
-
-func TestSms77API_Contacts(t *testing.T) {
-	assertContact := func(c Contact) bool {
-		invalid := false
-
-		if c.Id < 0 {
-			t.Errorf("Every Contact must have a positive ID")
-
-			invalid = true
-		}
-
-		return invalid
-	}
-
-	toStruct := func(c string) Contact {
-		c = strings.TrimSpace(c)
-		arr := strings.Split(c, ";")
-
-		id, err := strconv.ParseInt(strings.ReplaceAll(arr[0], "\"", ""), 10, 64)
-		if err != nil {
-			t.Errorf("Contacts.Id should should be a int64 value, but %s", err)
-		}
-
-		return Contact{
-			Id:    id,
-			Nick:  strings.ReplaceAll(arr[1], "\"", ""),
-			Phone: strings.ReplaceAll(arr[2], "\"", ""),
-		}
-	}
-
-	res, err := client.Contacts.ReadCsv(ContactsReadParams{})
-
-	if err != nil {
-		t.Errorf("Contacts() should not return an error, but %s", err)
-	}
-
-	if res == nil {
-		t.Errorf("Contacts() should return a string value, but received nil")
-	}
-
-	for _, csvContact := range strings.Split(strings.TrimSpace(*res), "\n") {
-		assertContact(toStruct(csvContact))
-	}
 }
 
 func TestSms77API_Hooks(t *testing.T) {

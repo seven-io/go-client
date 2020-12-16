@@ -11,6 +11,13 @@ import (
 	"strconv"
 )
 
+type HttpMethod string
+
+const (
+	HttpMethodGet HttpMethod = "GET"
+	HttpMethodPost   HttpMethod = "POST"
+)
+
 type Sms77API struct {
 	apiKey string
 	client *http.Client
