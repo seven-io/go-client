@@ -2,24 +2,35 @@ package sms77api
 
 import (
 	a "github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
 
-func status(messageId uint64, t *testing.T) []string {
-	status, err := client.Status.Post(StatusParams{MessageId: messageId})
-	var lines []string
+func testStatusAssert(s *Status, t *testing.T) {
+	a.NotEmpty(t, s.Code)
+	a.NotEmpty(t, s.DateTime)
+}
 
-	if nil == err {
-		lines = strings.Split(*status, "\n")
-	} else {
+func testStatusText(messageId uint64, t *testing.T) *string {
+	status, err := client.Status.Text(StatusParams{MessageId: messageId})
+
+	if nil != err {
 		a.Nil(t, status)
 	}
 
-	return lines
+	return status
 }
 
-func TestStatusResource_Post(t *testing.T) {
+func testStatusJson(messageId uint64, t *testing.T) *Status {
+	status, err := client.Status.Json(StatusParams{MessageId: messageId})
+
+	if nil != err {
+		a.Nil(t, status)
+	}
+
+	return status
+}
+
+func testStatusGetId() uint64 {
 	journals, _ := client.Journal.Outbound(&JournalParams{})
 	var id string
 
@@ -30,14 +41,23 @@ func TestStatusResource_Post(t *testing.T) {
 		id = journals[0].Id
 	}
 
-	lines := status(toUint(id, 64), t)
-	a.Len(t, lines, 2)
-	a.NotEmpty(t, lines[0])
-	a.NotEmpty(t, lines[1])
+	return toUint(id, 64)
 }
 
-func TestStatusResource_Post_Fail(t *testing.T) {
-	lines := status(0, t)
-	a.Len(t, lines, 1)
-	a.Equal(t, StatusApiCodeInvalidMessageId, lines[0])
+func TestStatusResource_Text(t *testing.T) {
+	s, _ := makeStatus(testStatusText(testStatusGetId(), t))
+
+	testStatusAssert(s, t)
+}
+
+func TestStatusResource_Text_Fail(t *testing.T) {
+	a.Equal(t, StatusApiCodeInvalidMessageId, *testStatusText(0, t))
+}
+
+func TestStatusResource_Json(t *testing.T) {
+	testStatusAssert(testStatusJson(testStatusGetId(), t), t)
+}
+
+func TestStatusResource_Json_Fail(t *testing.T) {
+	a.Nil(t, testStatusJson(0, t))
 }
