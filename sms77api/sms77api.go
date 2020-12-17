@@ -2,11 +2,11 @@ package sms77api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
 	"strconv"
 )
@@ -14,21 +14,21 @@ import (
 type HttpMethod string
 
 const (
-	HttpMethodGet HttpMethod = "GET"
-	HttpMethodPost   HttpMethod = "POST"
+	HttpMethodGet  HttpMethod = "GET"
+	HttpMethodPost HttpMethod = "POST"
 )
 
 type Sms77API struct {
-	apiKey string
+	Options
 	client *http.Client
-	base resource // Instead of allocating a struct for each service we reuse a one
+	base   resource // Instead of allocating a struct for each service we reuse a one
 
 	// Resources
 	Analytics        *AnalyticsResource
 	Balance          *BalanceResource
 	Contacts         *ContactsResource
 	Hooks            *HooksResource
-	Journal           *JournalResource
+	Journal          *JournalResource
 	Lookup           *LookupResource
 	Pricing          *PricingResource
 	Sms              *SmsResource
@@ -41,14 +41,26 @@ type resource struct {
 	client *Sms77API
 }
 
+type Options struct {
+	ApiKey   string
+	Debug    bool
+	SentWith string
+}
+
 const senderKey = "sentWith"
-const senderValue = "go-client"
+const defaultOptionSentWith = "go-client"
 
-var _, isDev = os.LookupEnv("SMS77_DEBUG")
+func New(options Options) *Sms77API {
+	if "" == options.ApiKey {
+		panic(errors.New("missing required option ApiKey"))
+	}
 
-func New(apiKey string) *Sms77API {
+	if "" == options.SentWith {
+		options.SentWith = defaultOptionSentWith
+	}
+
 	c := &Sms77API{client: http.DefaultClient}
-	c.apiKey = apiKey
+	c.Options = options
 	c.base.client = c
 
 	c.Analytics = (*AnalyticsResource)(&c.base)
@@ -96,7 +108,7 @@ func (api *Sms77API) createRequestPayload(payload map[string]interface{}) url.Va
 }
 
 func (api *Sms77API) request(endpoint string, httpMethod string, data interface{}) (string, error) {
-	if nil == data  {
+	if nil == data {
 		data = map[string]interface{}{}
 	}
 
@@ -115,7 +127,7 @@ func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, 
 	payload := api.createRequestPayload(data)
 	uri := buildUri(endpoint) + "?" + payload.Encode()
 
-	if isDev {
+	if api.Debug {
 		fmt.Println("GET", uri)
 	}
 
@@ -125,20 +137,20 @@ func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, 
 		return "", fmt.Errorf("could not execute request! #1 (%s)", err.Error())
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", api.apiKey))
-	req.Header.Add(senderKey, senderValue)
+	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", api.ApiKey))
+	req.Header.Add(senderKey, api.SentWith)
 
 	return api.handleResponse(api.client.Do(req))
 }
 
 func (api *Sms77API) post(endpoint string, data map[string]interface{}) (string, error) {
 	payload := api.createRequestPayload(data)
-	payload.Add("p", api.apiKey)
-	payload.Add(senderKey, senderValue)
+	payload.Add("p", api.ApiKey)
+	payload.Add(senderKey, api.SentWith)
 
 	uri := buildUri(endpoint)
 
-	if isDev {
+	if api.Debug {
 		fmt.Println("POST", uri, payload)
 	}
 
@@ -160,7 +172,7 @@ func (api *Sms77API) handleResponse(res *http.Response, err error) (string, erro
 
 	str := string(body)
 
-	if isDev {
+	if api.Debug {
 		fmt.Println(str)
 	}
 

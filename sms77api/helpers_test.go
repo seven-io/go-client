@@ -12,6 +12,10 @@ const (
 )
 
 var client, dummy = GetClient()
+var options = Options{
+	Debug:    true,
+	SentWith: "go-client-test",
+}
 
 func GetClient() (*Sms77API, bool) {
 	var dummy = true
@@ -23,7 +27,9 @@ func GetClient() (*Sms77API, bool) {
 		dummy = false
 	}
 
-	return New(apiKey), dummy
+	options.ApiKey = apiKey
+
+	return New(options), dummy
 }
 
 func AssertIsPositive(descriptor string, number interface{}, t *testing.T) bool {
@@ -102,9 +108,9 @@ func AssertEquals(descriptor string, actual interface{}, expected interface{}, t
 }
 
 func AssertInArray(descriptor string, needle interface{}, haystack interface{}, t *testing.T) bool {
-	 if InArray(needle, haystack) {
-	 	return true
-	 }
+	if InArray(needle, haystack) {
+		return true
+	}
 
 	t.Errorf("%s with value %s should be included in %v", descriptor, needle, haystack)
 
