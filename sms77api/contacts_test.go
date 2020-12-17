@@ -2,6 +2,7 @@ package sms77api
 
 import (
 	"fmt"
+	a "github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
 )
@@ -9,9 +10,7 @@ import (
 var createdId uint64
 
 func assertContact(c Contact, t *testing.T) {
-	if 0 == toUint64(c.Id) {
-		t.Error("Every Contact must have a positive ID")
-	}
+	a.Greater(t, toUint(c.Id, 64), uint64(0))
 }
 
 func assertDeletion(actual string, err error, t *testing.T) {
@@ -33,7 +32,7 @@ func assertDeletion(actual string, err error, t *testing.T) {
 		return &expected
 	}
 
-	AssertEquals("code", actual, string(*getExpectedContactCode(err)), t)
+	a.Equal(t, string(*getExpectedContactCode(err)), actual)
 }
 
 func getDeleteParams() ContactsDeleteParams {
@@ -47,11 +46,17 @@ func getDeleteParams() ContactsDeleteParams {
 }
 
 func isValidCode(needle ContactsWriteCode) bool {
-	return InArray(needle, [...]ContactsWriteCode{ContactsWriteCodeUnchanged, ContactsWriteCodeChanged})
+	return inArray(needle, [...]ContactsWriteCode{ContactsWriteCodeUnchanged, ContactsWriteCodeChanged})
 }
 
 func prepareEdit() (Contact, string) {
 	contacts, _ := client.Contacts.ReadJson(ContactsReadParams{})
+
+	if 0 == len(contacts) {
+		c, _ := client.Contacts.CreateJson()
+		contacts, _ = client.Contacts.ReadJson(ContactsReadParams{c.Id})
+	}
+
 	contact := contacts[0]
 
 	return contact, fmt.Sprintf("%sXXX", contact.Nick)
@@ -63,20 +68,20 @@ func TestContacts_CreateCsv(t *testing.T) {
 	if nil == err {
 		lines := strings.Split(text, "\n")
 
-		if AssertEquals("api_code", lines[0], "152", t) {
-			id := toUint64(lines[1])
-			if AssertIsPositive("created_id", id, t) {
+		if a.Equal(t, "152", lines[0]) {
+			id := toUint(lines[1], 64)
+			if a.Greater(t, id, uint64(0)) {
 				createdId = id
 			}
 		} else {
-			AssertEquals("linesCount", len(lines), 1, t)
+			a.Equal(t, 1, len(lines))
 		}
 
 		if 0 != createdId {
 			TestContacts_DeleteCsv(t)
 		}
 	} else {
-		AssertEquals("response", text, nil, t)
+		a.Equal(t, nil, text)
 	}
 }
 
@@ -84,17 +89,17 @@ func TestContacts_CreateJson(t *testing.T) {
 	o, e := client.Contacts.CreateJson()
 
 	if nil == e {
-		AssertIsTrue("valid_return_code", isValidCode(o.Return), t)
+		a.True(t, isValidCode(o.Return))
 
 		if ContactsWriteCodeChanged == o.Return {
 			createdId = o.Id
 
 			TestContacts_DeleteJson(t)
 		} else {
-			AssertEquals("contact_id", 0, nil, t)
+			a.Equal(t, ContactsWriteCodeUnchanged, o.Return)
 		}
 	} else {
-		AssertEquals("response", o, nil, t)
+		a.Equal(t, nil, o)
 	}
 }
 
@@ -123,16 +128,16 @@ func TestContacts_EditCsv(t *testing.T) {
 
 	if nil == err {
 		writeCode := ContactsWriteCode(code)
-		AssertIsTrue("valid_code", isValidCode(writeCode), t)
+		a.True(t, isValidCode(writeCode))
 
 		if ContactsWriteCodeChanged != writeCode {
 			expectedNick = contact.Nick
 		}
 
-		contacts, _ := client.Contacts.ReadJson(ContactsReadParams{toUint64(contact.Id)})
-		AssertEquals("contact.Nick", contacts[0].Nick, expectedNick, t)
+		contacts, _ := client.Contacts.ReadJson(ContactsReadParams{toUint(contact.Id, 64)})
+		a.Equal(t, expectedNick, contacts[0].Nick)
 	} else {
-		AssertIsNil("response", code, t)
+		a.Nil(t, code)
 	}
 }
 
@@ -146,10 +151,10 @@ func TestContacts_EditJson(t *testing.T) {
 			expectedNick = contact.Nick
 		}
 
-		contacts, _ := client.Contacts.ReadJson(ContactsReadParams{toUint64(contact.Id)})
-		AssertEquals("contact.Nick", contacts[0].Nick, expectedNick, t)
+		contacts, _ := client.Contacts.ReadJson(ContactsReadParams{toUint(contact.Id, 64)})
+		a.Equal(t, expectedNick, contacts[0].Nick)
 	} else {
-		AssertIsNil("response", obj, t)
+		a.Nil(t, obj)
 	}
 }
 
@@ -173,7 +178,7 @@ func TestContacts_ReadCsv(t *testing.T) {
 			assertContact(toStruct(csv), t)
 		}
 	} else {
-		AssertEquals("csv", csv, nil, t)
+		a.Equal(t, nil, csv)
 	}
 }
 
@@ -185,6 +190,6 @@ func TestContacts_ReadJson(t *testing.T) {
 			assertContact(contact, t)
 		}
 	} else {
-		AssertEquals("contacts", array, nil, t)
+		a.Equal(t, nil, array)
 	}
 }

@@ -1,51 +1,54 @@
 package sms77api
 
 import (
+	a "github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
 	"time"
 )
 
-func TestSms77API_Sms(t *testing.T) {
-	baseParams := SmsBaseParams{
-		Debug:               true,
-		Delay:               strconv.FormatInt(time.Now().Unix(), 10),
-		Flash:               true,
-		ForeignId:           "GoTestForeignId",
-		From:                "Go-Test",
-		Label:               "GoTestLabel",
-		NoReload:            false,
-		PerformanceTracking: true,
-		Text:                "Hey friend",
-		To:                  VinTelekom,
-		Ttl:                 320000,
-		Udh:                 "GoTestUserDataHeader",
-		Unicode:             false,
-		Utf8:                false,
-	}
+var testSmsBaseParams = SmsBaseParams{
+	Debug:               true,
+	Delay:               strconv.FormatInt(time.Now().Unix(), 10),
+	Flash:               true,
+	ForeignId:           "GoTestForeignId",
+	From:                "Go-Test",
+	Label:               "GoTestLabel",
+	NoReload:            false,
+	PerformanceTracking: true,
+	Text:                "Hey friend",
+	To:                  VinTelekom,
+	Ttl:                 320000,
+	Udh:                 "GoTestUserDataHeader",
+	Unicode:             false,
+	Utf8:                false,
+}
 
-	json, jsonError := client.Sms.Json(baseParams)
-	if nil == jsonError {
-		AssertIsLengthy("Success", json.Success, t)
-		AssertIsLengthy("Debug", json.Debug, t)
-		AssertIsLengthy("SmsType", json.SmsType, t)
-		AssertIsPositive("Balance", json.Balance, t)
-		if len(json.Messages) == 0 {
-			t.Errorf("Messages should not be empty")
-		}
-		AssertIsPositive("TotalPrice", json.TotalPrice, t)
+func TestSmsResource_Json(t *testing.T) {
+	json, err := client.Sms.Json(testSmsBaseParams)
+	if nil == err {
+		k, v := pickMapByKey(&json.Success, StatusCodes)
+		a.NotNil(t, k)
+		a.NotNil(t, v)
+		a.NotEmpty(t, json.Debug)
+		a.NotEmpty(t, json.SmsType)
+		a.GreaterOrEqual(t, json.Balance, float64(0))
+		a.NotEmpty(t, json.Messages)
+		a.GreaterOrEqual(t, json.TotalPrice, float64(0))
 	} else {
-		AssertEquals("json", json, nil, t)
+		a.Equal(t, &SmsResponse{}, json)
 	}
+}
 
-	csv, csvError := client.Sms.Text(SmsTextParams{
+func TestSmsResource_Text(t *testing.T) {
+	csv, err := client.Sms.Text(SmsTextParams{
 		Details:         true,
 		ReturnMessageId: true,
-		SmsBaseParams:   baseParams,
+		SmsBaseParams:   testSmsBaseParams,
 	})
-	if nil == csvError {
-		AssertIsLengthy("csv", *csv, t)
+	if nil == err {
+		a.NotEmpty(t, *csv)
 	} else {
-		AssertEquals("csv", csv, nil, t)
+		a.Nil(t, csv)
 	}
 }

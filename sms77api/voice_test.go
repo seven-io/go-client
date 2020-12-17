@@ -1,28 +1,61 @@
 package sms77api
 
-import "testing"
+import (
+	a "github.com/stretchr/testify/assert"
+	"strconv"
+	"strings"
+	"testing"
+)
 
-func TestSms77API_Voice(t *testing.T) {
-	voice := func(xml bool) interface{} {
-		params := VoiceParams{To: VinTelekom, Text: "Hey friend", From: "Go-Test"}
-		if xml {
-			params.Xml = true
+type testVoiceDummyExpectation struct {
+	code int
+	cost float64
+	id   int
+}
+
+func voice(p VoiceParams, e testVoiceDummyExpectation, t *testing.T) {
+	p.From = "Go-Test"
+	p.To = VinTelekom
+	res, err := client.Voice.Post(p)
+
+	if nil == err {
+		a.NotEmpty(t, *res)
+
+		lines := strings.Split(*res, "\n")
+		a.Len(t, lines, 3)
+
+		code, _ := strconv.Atoi(lines[0])
+		id, _ := strconv.Atoi(lines[1])
+		cost, _ := strconv.ParseFloat(lines[2], 64)
+
+		if testIsDummy {
+			a.Equal(t, e.code, code)
+			a.Equal(t, e.id, id)
+			a.Equal(t, e.cost, cost)
+		} else {
+			a.NotEmpty(t, code)
+			a.NotEmpty(t, id)
+			a.NotEmpty(t, cost)
 		}
 
-		res, err := client.Voice.Post(params)
-
-		if err != nil {
-			t.Errorf("Voice() should not return an error, but %s", err)
-		}
-
-		if res == nil {
-			t.Errorf("Voice() should return a string, but received nil")
-		}
-
-		AssertIsLengthy("response", *res, t)
-
-		return res
+	} else {
+		a.Nil(t, res)
 	}
+}
 
-	voice(false)
+func TestVoiceResource_Post(t *testing.T) {
+	voice(VoiceParams{Text: "Just testing ;-)"}, testVoiceDummyExpectation{code: 100, cost: 0, id: 123456789}, t)
+}
+
+func TestVoiceResource_Post_Xml(t *testing.T) {
+	xml := `
+		<?xml version="1.0" encoding="UTF-8"?>
+			<Response>
+				<Say voice="woman" language="en-EN">
+					Your glasses are ready for pickup.
+				</Say>
+			<Record maxlength="20" />
+		</Response>
+	`
+	voice(VoiceParams{Text: xml, Xml: true}, testVoiceDummyExpectation{code: 203, cost: 0.1, id: 0}, t)
 }

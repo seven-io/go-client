@@ -1,29 +1,44 @@
 package sms77api
 
 import (
+	a "github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestSms77API_Journal(t *testing.T) {
-	request := func(journals interface{}, err error) interface{} {
-		if nil != err {
-			AssertEquals("journals", journals, nil, t)
-		}
-
-		return journals
+func journal(journals interface{}, err error, t *testing.T) interface{} {
+	if nil != err {
+		a.Nil(t, journals)
 	}
 
-	request(client.Journal.Inbound(&JournalParams{}))
+	return journals
+}
 
-	for _, journal := range request(client.Journal.Outbound(&JournalParams{})).([]JournalOutbound) {
-		AssertIsLengthy("Connection", journal.Connection, t)
-		AssertIsLengthy("Type", journal.Type, t)
+func TestJournalInbound(t *testing.T) {
+	r, e := client.Journal.Inbound(&JournalParams{})
+
+	journal(r, e, t)
+}
+
+func TestJournalOutbound(t *testing.T) {
+	r, e := client.Journal.Outbound(&JournalParams{})
+
+	for _, j := range journal(r, e, t).([]JournalOutbound) {
+		a.Greater(t, len(j.Connection), 0)
+		a.Greater(t, len(j.Type), 0)
 	}
+}
 
-	request(client.Journal.Replies(&JournalParams{}))
+func TestJournalReplies(t *testing.T) {
+	r, e := client.Journal.Replies(&JournalParams{})
 
-	for _, journal := range request(client.Journal.Voice(&JournalParams{})).([]JournalVoice) {
-		AssertIsLengthy("Duration", journal.Duration, t)
-		AssertIsLengthy("Status", journal.Status, t)
+	journal(r, e, t)
+}
+
+func TestJournalVoice(t *testing.T) {
+	r, e := client.Journal.Voice(&JournalParams{})
+
+	for _, j := range journal(r, e, t).([]JournalVoice) {
+		a.Greater(t, len(j.Duration), 0)
+		a.Greater(t, len(j.Status), 0)
 	}
 }

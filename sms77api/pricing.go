@@ -23,13 +23,12 @@ type CountryPricing struct {
 type PricingFormat string
 
 const (
-	PricingFormatCsv   PricingFormat = "csv"
-	PricingFormatJson  PricingFormat = "json"
+	PricingFormatCsv  PricingFormat = "csv"
+	PricingFormatJson PricingFormat = "json"
 )
 
 type PricingParams struct {
 	Country string `json:"country,omitempty"`
-	//Format  PricingFormat `json:"format,omitempty"`
 }
 
 type PricingResponse struct {
@@ -40,15 +39,41 @@ type PricingResponse struct {
 
 type PricingApiParams struct {
 	PricingParams
-	Format  PricingFormat `json:"format,omitempty"`
+	Format PricingFormat `json:"format,omitempty"`
 }
 
-const ENDPOINT = "pricing"
+type PricingCsvHeader int
+
+const (
+	PricingHeaderCountryCode PricingCsvHeader = iota
+	PricingHeaderCountryName
+	PricingHeaderCountryPrefix
+	PricingHeaderMcc
+	PricingHeaderMncs
+	PricingHeaderNetworkName
+	PricingHeaderPrice
+	PricingHeaderFeatures
+	PricingHeaderComment
+)
+
+var PricingCsvHeaders = map[PricingCsvHeader]string{
+	PricingHeaderCountryCode:   "countryCode",
+	PricingHeaderCountryName:   "countryName",
+	PricingHeaderCountryPrefix: "countryPrefix",
+	PricingHeaderMcc:           "mcc",
+	PricingHeaderMncs:          "mncs",
+	PricingHeaderNetworkName:   "networkName",
+	PricingHeaderPrice:         "price",
+	PricingHeaderFeatures:      "features",
+	PricingHeaderComment:       "comment",
+}
+
+const EndpointPricing = "pricing"
 
 func (api *PricingResource) Csv(p PricingParams) (string, error) {
-	res, err := api.client.request(ENDPOINT, "GET", PricingApiParams{
+	res, err := api.client.request(EndpointPricing, "GET", PricingApiParams{
 		PricingParams: p,
-		Format: PricingFormatCsv,
+		Format:        PricingFormatCsv,
 	})
 
 	if err != nil {
@@ -59,7 +84,7 @@ func (api *PricingResource) Csv(p PricingParams) (string, error) {
 }
 
 func (api *PricingResource) Json(p PricingParams) (*PricingResponse, error) {
-	res, err := api.client.request(ENDPOINT, "GET", PricingApiParams{PricingParams: p})
+	res, err := api.client.request(EndpointPricing, "GET", PricingApiParams{PricingParams: p})
 
 	if err != nil {
 		return nil, err
@@ -73,11 +98,3 @@ func (api *PricingResource) Json(p PricingParams) (*PricingResponse, error) {
 
 	return js, nil
 }
-
-/*func (api *PricingResource) Get(p *PricingParams) (interface{}, error) {
-	if "csv" == p.Format {
-		return api.Csv(p)
-	}
-
-	return api.Json(p)
-}*/

@@ -1,8 +1,11 @@
 package sms77api
 
-import "testing"
+import (
+	a "github.com/stretchr/testify/assert"
+	"testing"
+)
 
-func TestSms77API_Balance(t *testing.T) {
+func TestBalance(t *testing.T) {
 	res, err := client.Balance.Get()
 
 	if err != nil {
@@ -13,5 +16,10 @@ func TestSms77API_Balance(t *testing.T) {
 		t.Errorf("Balance() should return a float64 value, but received nil")
 	}
 
-	AssertIsPositive("Balance()", res, t)
+	a.GreaterOrEqual(t, *res, float64(0))
+}
+
+func TestBalanceBad(t *testing.T) {
+	r, e := testBadClient.Balance.Get()
+	AssertKeylessCall(t, r, e)
 }

@@ -1,10 +1,12 @@
 package sms77api
 
+type StatusResource resource
+
 type StatusParams struct {
-	MessageId int64 `json:"msg_id"`
+	MessageId uint64 `json:"msg_id"`
 }
 
-type StatusResource resource
+const StatusApiCodeInvalidMessageId = "901"
 
 func (api *StatusResource) Post(p StatusParams) (*string, error) {
 	res, err := api.client.request("status", "POST", p)

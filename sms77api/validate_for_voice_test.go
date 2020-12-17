@@ -1,23 +1,32 @@
 package sms77api
 
 import (
+	a "github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
 )
 
-func TestSms77API_ValidateForVoice(t *testing.T) {
-	res, err := client.ValidateForVoice.Get(ValidateForVoiceParams{Number: VinTelekom})
-
-	if err != nil {
-		t.Errorf("ValidateForVoice() should not return an error, but %s", err)
-	}
-
-	if dummy {
-		AssertIsTrue("success", res.Success, t)
-	} else {
-		_, err = strconv.Atoi(res.Code)
-		if err != nil {
-			t.Errorf("Code should be numeric, but %s", err)
+func validateForVoice(res *ValidateForVoiceResponse, err error, t *testing.T) {
+	if nil == err {
+		if testIsDummy {
+			a.True(t, res.Success)
+		} else {
+			_, err = strconv.Atoi(res.Code)
+			a.NotNil(t, err)
 		}
+	} else {
+		a.Nil(t, res)
 	}
+}
+
+func TestValidateForVoiceResource_Get(t *testing.T) {
+	r, e := client.ValidateForVoice.Get(ValidateForVoiceParams{Number: VinTelekom})
+
+	validateForVoice(r, e, t)
+}
+
+func TestValidateForVoiceResource_Get_Fail(t *testing.T) {
+	r, e := client.ValidateForVoice.Get(ValidateForVoiceParams{Number: ""})
+
+	validateForVoice(r, e, t)
 }

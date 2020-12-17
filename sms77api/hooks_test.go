@@ -2,54 +2,51 @@ package sms77api
 
 import (
 	"fmt"
+	a "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
-func TestSms77API_Hooks(t *testing.T) {
-	request := func(params HooksParams) interface{} {
-		res, err := client.Hooks.Request(params)
+func hooks(p HooksParams, t *testing.T) interface{} {
+	res, err := client.Hooks.Request(p)
 
-		if err != nil {
-			t.Errorf("Hooks() should not return an error, but %s", err)
-		}
-
-		if res == nil {
-			t.Errorf("Hooks() should return json, but received nil")
-		}
-
-		return res
+	if err != nil {
+		a.Nil(t, res)
 	}
 
-	hooks := request(HooksParams{Action: HooksActionRead}).(*HooksReadResponse)
+	return res
+}
+
+func TestHooksRead(t *testing.T) {
+	hooks := hooks(HooksParams{Action: HooksActionRead}, t).(*HooksReadResponse)
 
 	if hooks.Success && hooks.Hooks != nil {
 		for _, hook := range hooks.Hooks {
-			AssertIsLengthy("Created", hook.Created, t)
-			AssertIsLengthy("Id", hook.Id, t)
-			AssertIsLengthy("TargetUrl", hook.TargetUrl, t)
-			AssertInArray("EventType", hook.EventType,
-				[...]HookEventType{HookEventTypeSmsStatus, HookEventTypeVoiceStatus, HookEventTypeInboundSms}, t)
-			AssertInArray("RequestMethod", hook.RequestMethod,
-				[...]HookRequestMethod{HookRequestMethodGet, HookRequestMethodPost}, t)
+			a.Greater(t, len(hook.Created), 0)
+			a.Greater(t, toUint(hook.Id, 64), uint64(0))
+			a.Greater(t, len(hook.TargetUrl), 0)
+			a.Contains(t, [...]HookEventType{HookEventTypeSmsStatus, HookEventTypeVoiceStatus, HookEventTypeInboundSms}, hook.EventType)
+			a.Contains(t, [...]HookRequestMethod{HookRequestMethodGet, HookRequestMethodPost}, hook.RequestMethod)
 		}
 	}
+}
 
-	subscribed := request(HooksParams{
+func TestHooksSubscribeAndUnsubscribe(t *testing.T) {
+	subscribed := hooks(HooksParams{
 		Action:        HooksActionSubscribe,
 		EventType:     HookEventTypeInboundSms,
 		RequestMethod: HookRequestMethodGet,
 		TargetUrl:     fmt.Sprintf("https://test.tld/go-client/%d", time.Now().Unix()),
-	}).(*HooksSubscribeResponse)
+	}, t).(*HooksSubscribeResponse)
 
-	AssertIsPositive("Id", subscribed.Id, t)
+	a.Greater(t, subscribed.Id, 0)
 
 	if true == subscribed.Success {
-		subscribed := request(HooksParams{
+		subscribed := hooks(HooksParams{
 			Action: HooksActionUnsubscribe,
 			Id:     subscribed.Id,
-		}).(*HooksUnsubscribeResponse)
+		}, t).(*HooksUnsubscribeResponse)
 
-		AssertIsTrue("Success", subscribed.Success, t)
+		a.True(t, subscribed.Success)
 	}
 }

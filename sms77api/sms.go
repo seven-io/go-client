@@ -25,11 +25,6 @@ type SmsTextParams struct {
 	ReturnMessageId bool `json:"return_msg_id,omitempty"`
 }
 
-type SmsParams struct {
-	SmsBaseParams
-	SmsTextParams
-}
-
 type SmsResponse struct {
 	Debug    string  `json:"debug"`
 	Balance  float64 `json:"balance"`
@@ -46,14 +41,14 @@ type SmsResponse struct {
 		Success   bool      `json:"success"`
 		Text      string    `json:"text"`
 	} `json:"messages"`
-	SmsType    string  `json:"sms_type"`
-	Success    string  `json:"success"`
-	TotalPrice float64 `json:"total_price"`
+	SmsType    string     `json:"sms_type"`
+	Success    StatusCode `json:"success"`
+	TotalPrice float64    `json:"total_price"`
 }
 
 type SmsResource resource
 
-func (api *SmsResource) Request(p interface{}) (*string, error) {
+func (api *SmsResource) request(p interface{}) (*string, error) {
 	res, err := api.client.request("sms", "POST", p)
 
 	if err != nil {
@@ -63,36 +58,26 @@ func (api *SmsResource) Request(p interface{}) (*string, error) {
 	return &res, nil
 }
 
-func (api *SmsResource) Text(p SmsTextParams) (*string, error) {
-	res, err := api.Request(p)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+func (api *SmsResource) Text(p SmsTextParams) (res *string, err error) {
+	return api.request(p)
 }
 
-func (api *SmsResource) Json(p SmsBaseParams) (*SmsResponse, error) {
+func (api *SmsResource) Json(p SmsBaseParams) (o *SmsResponse, err error) {
 	type SmsJsonParams struct {
 		SmsBaseParams
-		Json bool `json:"json,omitempty"`
+		json bool
 	}
 
-	res, err := api.Request(SmsJsonParams{
+	res, err := api.request(SmsJsonParams{
 		SmsBaseParams: p,
-		Json:          true,
+		json:          true,
 	})
 
-	if err != nil {
+	if nil != err {
 		return nil, err
 	}
 
-	var js = &SmsResponse{}
+	err = json.Unmarshal([]byte(*res), &o)
 
-	if err := json.Unmarshal([]byte(*res), js); err != nil {
-		return js, err
-	}
-
-	return js, nil
+	return
 }

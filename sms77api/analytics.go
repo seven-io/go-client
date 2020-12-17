@@ -1,13 +1,15 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type AnalyticsParams struct {
-	Start       string `json:"start,omitempty"`
-	End         string `json:"end,omitempty"`
-	GroupBy     string `json:"group_by,omitempty"`
-	Label       string `json:"label,omitempty"`
-	Subaccounts string `json:"subaccounts,omitempty"`
+	End         string           `json:"end,omitempty"`
+	GroupBy     AnalyticsGroupBy `json:"group_by,omitempty"`
+	Label       string           `json:"label,omitempty"`
+	Start       string           `json:"start,omitempty"`
+	Subaccounts string           `json:"subaccounts,omitempty"`
 }
 
 type Analytics struct {
@@ -25,19 +27,28 @@ type Analytics struct {
 	UsageEur float64 `json:"usage_eur"`
 }
 
-type AnalyticsResponse []Analytics
-
 type AnalyticsResource resource
 
-func (api *AnalyticsResource) Get(p *AnalyticsParams) (AnalyticsResponse, error) {
+type AnalyticsGroupBy string
+
+const (
+	AnalyticsGroupByCountry    AnalyticsGroupBy = "country"
+	AnalyticsGroupByDate       AnalyticsGroupBy = "date"
+	AnalyticsGroupByLabel      AnalyticsGroupBy = "label"
+	AnalyticsGroupBySubaccount AnalyticsGroupBy = "subaccount"
+)
+
+func (api *AnalyticsResource) Get(p *AnalyticsParams) (o []Analytics, err error) {
 	res, err := api.client.request("analytics", "GET", p)
 	if err != nil {
 		return nil, err
 	}
 
-	var js = AnalyticsResponse{}
-	if err := json.Unmarshal([]byte(res), &js); err != nil {
+	err = json.Unmarshal([]byte(res), &o)
+
+	if nil != err {
 		return nil, err
 	}
-	return js, nil
+
+	return o, nil
 }

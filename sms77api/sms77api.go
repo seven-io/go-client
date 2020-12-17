@@ -5,19 +5,24 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type HttpMethod string
-
-const (
-	HttpMethodGet  HttpMethod = "GET"
-	HttpMethodPost HttpMethod = "POST"
-)
-
+type Options struct {
+	ApiKey   string
+	Debug    bool
+	SentWith string
+}
+type resource struct {
+	client *Sms77API
+}
+type StatusCode string
 type Sms77API struct {
 	Options
 	client *http.Client
@@ -37,24 +42,52 @@ type Sms77API struct {
 	Voice            *VoiceResource
 }
 
-type resource struct {
-	client *Sms77API
-}
+const (
+	defaultOptionSentWith = "go-client"
 
-type Options struct {
-	ApiKey   string
-	Debug    bool
-	SentWith string
-}
+	sentWithKey = "sentWith"
 
-const senderKey = "sentWith"
-const defaultOptionSentWith = "go-client"
+	HttpMethodGet  HttpMethod = "GET"
+	HttpMethodPost HttpMethod = "POST"
+
+	StatusCodeErrorCarrierNotAvailable    StatusCode = "11"
+	StatusCodeSuccess                     StatusCode = "100"
+	StatusCodeSuccessPartial              StatusCode = "101"
+	StatusCodeInvalidSender               StatusCode = "201"
+	StatusCodeInvalidRecipient            StatusCode = "202"
+	StatusCodeMissingParamTo              StatusCode = "301"
+	StatusCodeMissingParamText            StatusCode = "305"
+	StatusCodeParamTextExceedsLengthLimit StatusCode = "401"
+	StatusCodePreventedByReloadLock       StatusCode = "402"
+	StatusCodeReachedDailyLimitForNumber  StatusCode = "403"
+	StatusCodeInsufficientCredits         StatusCode = "500"
+	StatusCodeErrorCarrierDelivery        StatusCode = "600"
+	StatusCodeErrorUnknown                StatusCode = "700"
+	StatusCodeErrorAuthentication         StatusCode = "900"
+	StatusCodeErrorApiDisabledForKey      StatusCode = "902"
+	StatusCodeErrorServerIp               StatusCode = "903"
+)
+
+var StatusCodes = map[StatusCode]string{
+	StatusCodeErrorCarrierNotAvailable:    "ErrorCarrierNotAvailable",
+	StatusCodeSuccess:                     "Success",
+	StatusCodeSuccessPartial:              "SuccessPartial",
+	StatusCodeInvalidSender:               "InvalidSender",
+	StatusCodeInvalidRecipient:            "InvalidRecipient",
+	StatusCodeMissingParamTo:              "MissingParamTo",
+	StatusCodeMissingParamText:            "MissingParamText",
+	StatusCodeParamTextExceedsLengthLimit: "ParamTextExceedsLengthLimit",
+	StatusCodePreventedByReloadLock:       "PreventedByReloadLock",
+	StatusCodeReachedDailyLimitForNumber:  "ReachedDailyLimitForNumber",
+	StatusCodeInsufficientCredits:         "InsufficientCredits",
+	StatusCodeErrorCarrierDelivery:        "ErrorCarrierDelivery",
+	StatusCodeErrorUnknown:                "ErrorUnknown",
+	StatusCodeErrorAuthentication:         "ErrorAuthentication",
+	StatusCodeErrorApiDisabledForKey:      "ErrorApiDisabledForKey",
+	StatusCodeErrorServerIp:               "ErrorServerIp",
+}
 
 func New(options Options) *Sms77API {
-	if "" == options.ApiKey {
-		panic(errors.New("missing required option ApiKey"))
-	}
-
 	if "" == options.SentWith {
 		options.SentWith = defaultOptionSentWith
 	}
@@ -107,28 +140,17 @@ func (api *Sms77API) createRequestPayload(payload map[string]interface{}) url.Va
 	return params
 }
 
-func (api *Sms77API) request(endpoint string, httpMethod string, data interface{}) (string, error) {
-	if nil == data {
-		data = map[string]interface{}{}
-	}
-
-	data, _ = json.Marshal(&data)
-
-	json.Unmarshal(data.([]byte), &data)
-
-	if "POST" == httpMethod {
-		return api.post(endpoint, data.(map[string]interface{}))
-	}
-
-	return api.get(endpoint, data.(map[string]interface{}))
-}
-
 func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, error) {
 	payload := api.createRequestPayload(data)
-	uri := buildUri(endpoint) + "?" + payload.Encode()
+	qs := payload.Encode()
+
+	uri := buildUri(endpoint)
+	if "" != qs {
+		uri += "?" + qs
+	}
 
 	if api.Debug {
-		fmt.Println("GET", uri)
+		log.Println("GET", uri)
 	}
 
 	req, err := http.NewRequest("GET", uri, nil)
@@ -138,23 +160,9 @@ func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, 
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", api.ApiKey))
-	req.Header.Add(senderKey, api.SentWith)
+	req.Header.Add(sentWithKey, api.SentWith)
 
 	return api.handleResponse(api.client.Do(req))
-}
-
-func (api *Sms77API) post(endpoint string, data map[string]interface{}) (string, error) {
-	payload := api.createRequestPayload(data)
-	payload.Add("p", api.ApiKey)
-	payload.Add(senderKey, api.SentWith)
-
-	uri := buildUri(endpoint)
-
-	if api.Debug {
-		fmt.Println("POST", uri, payload)
-	}
-
-	return api.handleResponse(api.client.PostForm(uri, payload))
 }
 
 func (api *Sms77API) handleResponse(res *http.Response, err error) (string, error) {
@@ -170,11 +178,55 @@ func (api *Sms77API) handleResponse(res *http.Response, err error) (string, erro
 		return "", fmt.Errorf("could not execute request! #3 (%s)", err.Error())
 	}
 
-	str := string(body)
+	str := strings.TrimSpace(string(body))
 
 	if api.Debug {
-		fmt.Println(str)
+		log.Println(str)
+	}
+
+	length := len(str)
+
+	if 2 == length || 3 == length {
+		code, msg := pickMapByKey(str, StatusCodes)
+		if nil != code {
+			return "", errors.New(fmt.Sprintf("%s: %s", code, msg))
+		}
 	}
 
 	return str, nil
+}
+
+func (api *Sms77API) post(endpoint string, data map[string]interface{}) (string, error) {
+	payload := api.createRequestPayload(data)
+	payload.Add("p", api.ApiKey)
+	payload.Add(sentWithKey, api.SentWith)
+
+	uri := buildUri(endpoint)
+
+	if api.Debug {
+		log.Println("POST", uri, payload)
+	}
+
+	return api.handleResponse(api.client.PostForm(uri, payload))
+}
+
+func (api *Sms77API) request(endpoint string, httpMethod string, data interface{}) (string, error) {
+	if "" == api.Options.ApiKey {
+		return "", errors.New("missing required option ApiKey")
+	}
+
+	if nil == data {
+		data = map[string]interface{}{}
+	}
+
+	data, _ = json.Marshal(&data)
+
+	json.Unmarshal(data.([]byte), &data)
+
+	m := map[string]func(*Sms77API, string, map[string]interface{}) (string, error){
+		"GET":  (*Sms77API).get,
+		"POST": (*Sms77API).post,
+	}
+
+	return m[httpMethod](api, endpoint, data.(map[string]interface{}))
 }
