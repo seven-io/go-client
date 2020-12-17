@@ -2,53 +2,14 @@ package sms77api
 
 import (
 	a "github.com/stretchr/testify/assert"
-	"strconv"
-	"strings"
 	"testing"
 )
 
-type testVoiceDummyExpectation struct {
-	code int
-	cost float64
-	id   int
-}
+func testVoiceBuildParams(p VoiceParams) VoiceParams {
+	text := "Just testing ;-)"
 
-func voice(p VoiceParams, e testVoiceDummyExpectation, t *testing.T) {
-	p.From = "Go-Test"
-	p.To = VinTelekom
-	res, err := client.Voice.Post(p)
-
-	if nil == err {
-		a.NotEmpty(t, *res)
-
-		lines := strings.Split(*res, "\n")
-		a.Len(t, lines, 3)
-
-		code, _ := strconv.Atoi(lines[0])
-		id, _ := strconv.Atoi(lines[1])
-		cost, _ := strconv.ParseFloat(lines[2], 64)
-
-		if testIsDummy {
-			a.Equal(t, e.code, code)
-			a.Equal(t, e.id, id)
-			a.Equal(t, e.cost, cost)
-		} else {
-			a.NotEmpty(t, code)
-			a.NotEmpty(t, id)
-			a.NotEmpty(t, cost)
-		}
-
-	} else {
-		a.Nil(t, res)
-	}
-}
-
-func TestVoiceResource_Post(t *testing.T) {
-	voice(VoiceParams{Text: "Just testing ;-)"}, testVoiceDummyExpectation{code: 100, cost: 0, id: 123456789}, t)
-}
-
-func TestVoiceResource_Post_Xml(t *testing.T) {
-	xml := `
+	if p.Xml {
+		text = `
 		<?xml version="1.0" encoding="UTF-8"?>
 			<Response>
 				<Say voice="woman" language="en-EN">
@@ -57,5 +18,69 @@ func TestVoiceResource_Post_Xml(t *testing.T) {
 			<Record maxlength="20" />
 		</Response>
 	`
-	voice(VoiceParams{Text: xml, Xml: true}, testVoiceDummyExpectation{code: 203, cost: 0.1, id: 0}, t)
+	}
+
+	p.From = "Go-Test"
+	p.Text = text
+	p.To = VinTelekom
+
+	return p
+}
+
+func testVoiceJson(p VoiceParams, t *testing.T) {
+	v, e := client.Voice.Json(testVoiceBuildParams(p))
+
+	if nil == e {
+		testVoiceAssert(p, v, t)
+	} else {
+		a.Nil(t, v)
+	}
+}
+
+func testVoiceText(p VoiceParams, t *testing.T) {
+	res, err := client.Voice.Text(testVoiceBuildParams(p))
+
+	if nil == err {
+		testVoiceAssert(p, makeVoice(*res), t)
+	} else {
+		a.Nil(t, res)
+	}
+}
+
+func testVoiceAssert(p VoiceParams, v Voice, t *testing.T) {
+	getVoiceExpectation := func(p VoiceParams) Voice {
+		if p.Xml {
+			return Voice{Code: 203, Cost: 0.1, Id: 0}
+		}
+
+		return Voice{Code: 100, Cost: 0, Id: 123456789}
+	}
+
+	x := getVoiceExpectation(p)
+
+	if testIsDummy {
+		a.Equal(t, x.Code, v.Code)
+		a.Equal(t, x.Id, v.Id)
+		a.Equal(t, x.Cost, v.Cost)
+	} else {
+		a.NotEmpty(t, v.Code)
+		a.NotEmpty(t, v.Id)
+		a.NotEmpty(t, v.Cost)
+	}
+}
+
+func TestVoiceResource_Text(t *testing.T) {
+	testVoiceText(VoiceParams{}, t)
+}
+
+func TestVoiceResource_Text_Xml(t *testing.T) {
+	testVoiceText(VoiceParams{Xml: true}, t)
+}
+
+func TestVoiceResource_Json(t *testing.T) {
+	testVoiceJson(VoiceParams{}, t)
+}
+
+func TestVoiceResource_Json_Xml(t *testing.T) {
+	testVoiceJson(VoiceParams{Xml: true}, t)
 }
