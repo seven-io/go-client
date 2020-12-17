@@ -3,8 +3,8 @@ package sms77api
 import "encoding/json"
 
 type ValidateForVoiceParams struct {
+	Callback string `json:"callback"`
 	Number   string `json:"number"`
-	Networks string `json:"networks,omitempty"`
 }
 
 type ValidateForVoiceResponse struct {
@@ -19,18 +19,14 @@ type ValidateForVoiceResponse struct {
 
 type ValidateForVoiceResource resource
 
-func (api *ValidateForVoiceResource) Get(p ValidateForVoiceParams) (*ValidateForVoiceResponse, error) {
-	res, err := api.client.request("validate_for_voice", "GET", p)
+func (api *ValidateForVoiceResource) Get(p ValidateForVoiceParams) (o *ValidateForVoiceResponse, e error) {
+	r, e := api.client.request("validate_for_voice", "GET", p)
 
-	if err != nil {
-		return nil, err
+	if nil != e {
+		return
 	}
 
-	var js = &ValidateForVoiceResponse{}
+	e = json.Unmarshal([]byte(r), o)
 
-	if err := json.Unmarshal([]byte(res), js); err != nil {
-		return nil, err
-	}
-
-	return js, nil
+	return
 }
