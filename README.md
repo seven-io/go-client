@@ -28,4 +28,6 @@ func main() {
 
 #### Support
 
-Got stuck? Feel free to contact us via mail at <a href='mailto: support@sms77.io'>support@sms77.io</a>.
+Need help? Feel free to [contact us](https://www.sms77.io/en/company/contact/).
+
+[![MIT](https://img.shields.io/badge/License-MIT-teal.svg)](./LICENSE)
