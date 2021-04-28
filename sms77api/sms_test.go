@@ -3,6 +3,7 @@ package sms77api
 import (
 	a "github.com/stretchr/testify/assert"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -41,14 +42,53 @@ func TestSmsResource_Json(t *testing.T) {
 }
 
 func TestSmsResource_Text(t *testing.T) {
-	csv, err := client.Sms.Text(SmsTextParams{
-		Details:         true,
-		ReturnMessageId: true,
+	code, err := client.Sms.Text(SmsTextParams{
 		SmsBaseParams:   testSmsBaseParams,
 	})
 	if nil == err {
-		a.NotEmpty(t, *csv)
+		a.Equal(t, "100", *code)
 	} else {
-		a.Nil(t, csv)
+		a.Nil(t, code)
+	}
+}
+
+func TestSmsResource_Text_Detailed(t *testing.T) {
+	var params = SmsTextParams{
+		Details:         true,
+		SmsBaseParams:   testSmsBaseParams,
+	}
+	text, err := client.Sms.Text(params)
+	if nil == err {
+		var lines = strings.Split(*text,"\n")
+		var code = lines[0]
+		var expensed, _ = strconv.ParseFloat(lines[1], 10)
+		var price, _ = strconv.ParseFloat(strings.Split(lines[2]," ")[1], 10)
+		var _, balanceError = strconv.ParseFloat(strings.Split(lines[3]," ")[1], 10)
+		var text = strings.TrimLeft(lines[4], "Text: ")
+		var typ =  strings.Split(lines[5]," ")[1]
+		var flash, _ = strconv.ParseBool(strings.Split(lines[6]," ")[2])
+		var encoding =  strings.Split(lines[7]," ")[1]
+		var gsm0338, _ = strconv.ParseBool(strings.Split(lines[8]," ")[1])
+		var debug, _ = strconv.ParseBool(strings.Split(lines[9]," ")[1])
+
+		a.Equal(t, 10, len(lines))
+		a.Equal(t, "100", code)
+		a.Equal(t, true, gsm0338)
+		a.Equal(t, "gsm", encoding)
+		a.Equal(t, params.Flash, flash)
+		a.Equal(t, "direct", typ)
+		a.Equal(t, params.Text, text)
+		a.GreaterOrEqual(t, price, float64(0))
+		a.Nil(t, balanceError)
+
+		if testIsDummy {
+			a.Zero(t, expensed)
+			a.Equal(t, true, debug)
+		} else {
+			a.NotZero(t, expensed)
+			a.Equal(t, params.Debug, debug)
+		}
+	} else {
+		a.Nil(t, text)
 	}
 }
