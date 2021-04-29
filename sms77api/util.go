@@ -1,28 +1,14 @@
 package sms77api
 
 import (
-	"log"
 	"reflect"
 	"strconv"
 )
-
-func getMapKeys(mymap map[interface{}]interface{}) []interface{} {
-	//mymap := make(map[int]string)
-	keys := make([]interface{}, 0, len(mymap))
-	for k := range mymap {
-		keys = append(keys, k)
-	}
-
-	return keys
-}
 
 func pickMapByKey(needle interface{}, haystack interface{}) (interface{}, interface{}) {
 	mapIter := reflect.ValueOf(haystack).MapRange()
 
 	for mapIter.Next() {
-		log.Printf("%#v", needle)
-		log.Printf("%#v", mapIter.Key())
-
 		if needle == mapIter.Key() {
 			return needle, mapIter.Value()
 		}
