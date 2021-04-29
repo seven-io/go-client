@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-const VinTelekom = "+4915126716517"
+const VinTelekom = "4915126716517"
 
 var client, testIsDummy = GetClient()
 var testBadClient = New(Options{})

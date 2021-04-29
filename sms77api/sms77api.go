@@ -28,7 +28,6 @@ type Sms77API struct {
 	client *http.Client
 	base   resource // Instead of allocating a struct for each service we reuse a one
 
-	// Resources
 	Analytics        *AnalyticsResource
 	Balance          *BalanceResource
 	Contacts         *ContactsResource
@@ -119,6 +118,10 @@ func (api *Sms77API) createRequestPayload(payload map[string]interface{}) url.Va
 	params := url.Values{}
 
 	for key, value := range payload {
+		if api.Debug {
+			log.Println(key, value)
+		}
+
 		if nil == value {
 			continue
 		}
@@ -141,10 +144,9 @@ func (api *Sms77API) createRequestPayload(payload map[string]interface{}) url.Va
 }
 
 func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, error) {
-	payload := api.createRequestPayload(data)
-	qs := payload.Encode()
-
+	qs := api.createRequestPayload(data).Encode()
 	uri := buildUri(endpoint)
+
 	if "" != qs {
 		uri += "?" + qs
 	}

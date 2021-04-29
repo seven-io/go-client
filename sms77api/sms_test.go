@@ -27,14 +27,43 @@ var testSmsBaseParams = SmsBaseParams{
 
 func TestSmsResource_Json(t *testing.T) {
 	json, err := client.Sms.Json(testSmsBaseParams)
+
 	if nil == err {
-		k, v := pickMapByKey(&json.Success, StatusCodes)
-		a.NotNil(t, k)
-		a.NotNil(t, v)
-		a.NotEmpty(t, json.Debug)
-		a.NotEmpty(t, json.SmsType)
-		a.GreaterOrEqual(t, json.Balance, float64(0))
+		var debug = testSmsBaseParams.Debug
+		if testIsDummy {
+			debug = true
+		}
+		var Debug, _ = strconv.ParseBool(json.Debug)
+
+		a.NotNil(t, json.Balance)
+		a.Equal(t, debug, Debug)
+		a.Equal(t, "direct", json.SmsType)
+		a.Equal(t, StatusCodeSuccess, json.Success)
 		a.NotEmpty(t, json.Messages)
+		for _, msg := range json.Messages {
+			a.Equal(t, "gsm", msg.Encoding)
+			a.Nil(t, msg.Error)
+			a.Nil(t, msg.ErrorText)
+			a.Equal(t, int64(1), msg.Parts)
+			a.Equal(t, testSmsBaseParams.To, msg.Recipient)
+			a.Equal(t, testSmsBaseParams.From, msg.Sender)
+			a.True(t, msg.Success)
+			if nil != msg.Messages {
+				for _, msg2 := range *msg.Messages {
+					a.NotEmpty(t, msg2)
+				}
+			}
+			a.Equal(t, testSmsBaseParams.Text, msg.Text)
+
+			if debug {
+				a.Nil(t, msg.Id)
+				a.Equal(t, float64(0), msg.Price)
+			} else {
+				var id, _ = strconv.ParseInt(*msg.Id, 10, 0)
+				a.GreaterOrEqual(t, 1, id)
+				a.Greater(t, 0, msg.Price)
+			}
+		}
 		a.GreaterOrEqual(t, json.TotalPrice, float64(0))
 	} else {
 		a.Equal(t, &SmsResponse{}, json)
@@ -88,7 +117,7 @@ func testText(t *testing.T, params SmsTextParams) {
 			var id, _ = strconv.ParseInt(lines[index], 10, 0)
 
 			if testIsDummy {
-				a.Equal(t, id, id, 1234567890)
+				a.Equal(t, 1234567890, id)
 			} else {
 				a.GreaterOrEqual(t, id, 1)
 			}

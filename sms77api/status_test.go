@@ -36,7 +36,7 @@ func testStatusGetId() uint64 {
 
 	if 0 == len(journals) {
 		sms, _ := client.Sms.Json(SmsBaseParams{To: VinTelekom, Text: "HI"})
-		id = sms.Messages[0].Id
+		id = *sms.Messages[0].Id
 	} else {
 		id = journals[0].Id
 	}

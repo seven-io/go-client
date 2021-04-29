@@ -30,9 +30,10 @@ type SmsResponse struct {
 	Balance  float64 `json:"balance"`
 	Messages []struct {
 		Encoding  string    `json:"encoding"`
-		Error     string    `json:"error"`
-		ErrorText string    `json:"error_text"`
-		Id        string    `json:"id"`
+		Error     *string   `json:"error"`
+		ErrorText *string   `json:"error_text"`
+		Id        *string   `json:"id"`
+		Label     *string   `json:"label"`
 		Messages  *[]string `json:"messages,omitempty"`
 		Parts     int64     `json:"parts"`
 		Price     float64   `json:"price"`
@@ -65,12 +66,12 @@ func (api *SmsResource) Text(p SmsTextParams) (res *string, err error) {
 func (api *SmsResource) Json(p SmsBaseParams) (o *SmsResponse, err error) {
 	type SmsJsonParams struct {
 		SmsBaseParams
-		json bool
+		Json bool `json:"json,omitempty"`
 	}
 
 	res, err := api.request(SmsJsonParams{
 		SmsBaseParams: p,
-		json:          true,
+		Json:          true,
 	})
 
 	if nil != err {
