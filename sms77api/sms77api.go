@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -110,64 +109,108 @@ func New(options Options) *Sms77API {
 	return c
 }
 
-func buildUri(endpoint string) string {
-	return fmt.Sprintf("https://gateway.sms77.io/api/%s", endpoint)
-}
-
-func (api *Sms77API) createRequestPayload(payload map[string]interface{}) url.Values {
-	params := url.Values{}
-
-	for key, value := range payload {
-		if api.Debug {
-			log.Println(key, value)
-		}
-
-		if nil == value {
-			continue
-		}
-
-		switch reflect.TypeOf(value).Kind() {
-		case reflect.Bool:
-			if true == value {
-				value = "1"
-			} else {
-				value = "0"
-			}
-		case reflect.Int64:
-			value = strconv.FormatInt(value.(int64), 10)
-		}
-
-		params.Add(key, fmt.Sprintf("%v", value))
-	}
-
-	return params
-}
-
 func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, error) {
-	qs := api.createRequestPayload(data).Encode()
-	uri := buildUri(endpoint)
+	return api.request(endpoint, http.MethodGet, data)
+}
 
-	if "" != qs {
-		uri += "?" + qs
+func (api *Sms77API) post(endpoint string, data map[string]interface{}) (string, error) {
+	return api.request(endpoint, http.MethodPost, data)
+}
+
+func (api *Sms77API) request(endpoint string, method string, data interface{}) (string, error) {
+	createRequestPayload := func() string {
+		params := url.Values{}
+
+		for k, v := range data.(map[string]interface{}) {
+			if api.Debug {
+				log.Printf("%s: %v", k, v)
+			}
+
+			switch v.(type) {
+			case nil:
+				continue
+			case bool:
+				if true == v {
+					v = "1"
+				} else {
+					v = "0"
+				}
+			case int64:
+				v = strconv.FormatInt(v.(int64), 10)
+			case []interface{}:
+				for fileIndex, files := range v.([]interface{}) {
+					for fileKey, fileValue := range files.(map[string]interface{}) {
+						params.Add(
+							fmt.Sprintf("%s[%d][%s]", k, fileIndex, fileKey), fmt.Sprintf("%v", fileValue))
+					}
+				}
+
+				continue
+			}
+
+			params.Add(k, fmt.Sprintf("%v", v))
+		}
+
+		return params.Encode()
 	}
 
-	if api.Debug {
-		log.Println("GET", uri)
+	initClient := func() (req *http.Request, err error) {
+		var uri = fmt.Sprintf("https://gateway.sms77.io/api/%s", endpoint)
+		var qs = createRequestPayload()
+		var headers = map[string]string{
+			"Authorization": fmt.Sprintf("Basic %s", api.ApiKey),
+			sentWithKey:     api.SentWith,
+		}
+		var body = ""
+
+		if http.MethodGet == method {
+			if "" != qs {
+				uri = fmt.Sprintf("%s?%s", uri, qs)
+			}
+		} else {
+			body = qs
+
+			headers["Content-Type"] = "application/x-www-form-urlencoded"
+		}
+
+		if api.Debug {
+			log.Printf("%s %s", method, uri)
+		}
+
+		req, err = http.NewRequest(method, uri, strings.NewReader(body))
+
+		if nil != err {
+			log.Println(err.Error())
+			panic(err)
+		}
+
+		for k, v := range headers {
+			req.Header.Add(k, v)
+		}
+
+		return
 	}
 
-	req, err := http.NewRequest("GET", uri, nil)
+	if http.MethodGet != method && http.MethodPost != method {
+		return "", errors.New(fmt.Sprintf("unsupported http method %s", method))
+	}
 
+	if "" == api.Options.ApiKey {
+		return "", errors.New("missing required option ApiKey")
+	}
+
+	if nil == data {
+		data = map[string]interface{}{}
+	}
+	data, _ = json.Marshal(&data)
+	json.Unmarshal(data.([]byte), &data)
+
+	req, err := initClient()
 	if err != nil {
 		return "", fmt.Errorf("could not execute request! #1 (%s)", err.Error())
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", api.ApiKey))
-	req.Header.Add(sentWithKey, api.SentWith)
-
-	return api.handleResponse(api.client.Do(req))
-}
-
-func (api *Sms77API) handleResponse(res *http.Response, err error) (string, error) {
+	res, err := api.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not execute request! #2 (%s)", err.Error())
 	}
@@ -175,7 +218,6 @@ func (api *Sms77API) handleResponse(res *http.Response, err error) (string, erro
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
-
 	if err != nil {
 		return "", fmt.Errorf("could not execute request! #3 (%s)", err.Error())
 	}
@@ -196,39 +238,4 @@ func (api *Sms77API) handleResponse(res *http.Response, err error) (string, erro
 	}
 
 	return str, nil
-}
-
-func (api *Sms77API) post(endpoint string, data map[string]interface{}) (string, error) {
-	payload := api.createRequestPayload(data)
-	payload.Add("p", api.ApiKey)
-	payload.Add(sentWithKey, api.SentWith)
-
-	uri := buildUri(endpoint)
-
-	if api.Debug {
-		log.Println("POST", uri, payload)
-	}
-
-	return api.handleResponse(api.client.PostForm(uri, payload))
-}
-
-func (api *Sms77API) request(endpoint string, httpMethod string, data interface{}) (string, error) {
-	if "" == api.Options.ApiKey {
-		return "", errors.New("missing required option ApiKey")
-	}
-
-	if nil == data {
-		data = map[string]interface{}{}
-	}
-
-	data, _ = json.Marshal(&data)
-
-	json.Unmarshal(data.([]byte), &data)
-
-	m := map[string]func(*Sms77API, string, map[string]interface{}) (string, error){
-		"GET":  (*Sms77API).get,
-		"POST": (*Sms77API).post,
-	}
-
-	return m[httpMethod](api, endpoint, data.(map[string]interface{}))
 }

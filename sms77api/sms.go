@@ -2,21 +2,29 @@ package sms77api
 
 import "encoding/json"
 
+type SmsFile struct {
+	Contents string  `json:"contents"`
+	Name     string  `json:"name"`
+	Validity *uint8  `json:"validity,omitempty"`
+	Password *string `json:"password,omitempty"`
+}
+
 type SmsBaseParams struct {
-	Debug               bool   `json:"debug,omitempty"`
-	Delay               string `json:"delay,omitempty"`
-	Flash               bool   `json:"flash,omitempty"`
-	ForeignId           string `json:"foreign_id,omitempty"`
-	From                string `json:"from,omitempty"`
-	Label               string `json:"label,omitempty"`
-	NoReload            bool   `json:"no_reload,omitempty"`
-	PerformanceTracking bool   `json:"performance_tracking,omitempty"`
-	Text                string `json:"text"`
-	To                  string `json:"to"`
-	Ttl                 int64  `json:"ttl,omitempty"`
-	Udh                 string `json:"udh,omitempty"`
-	Unicode             bool   `json:"unicode,omitempty"`
-	Utf8                bool   `json:"utf8,omitempty"`
+	Debug               bool      `json:"debug,omitempty"`
+	Delay               string    `json:"delay,omitempty"`
+	Files               []SmsFile `json:"files,omitempty"`
+	Flash               bool      `json:"flash,omitempty"`
+	ForeignId           string    `json:"foreign_id,omitempty"`
+	From                string    `json:"from,omitempty"`
+	Label               string    `json:"label,omitempty"`
+	NoReload            bool      `json:"no_reload,omitempty"`
+	PerformanceTracking bool      `json:"performance_tracking,omitempty"`
+	Text                string    `json:"text"`
+	To                  string    `json:"to"`
+	Ttl                 int64     `json:"ttl,omitempty"`
+	Udh                 string    `json:"udh,omitempty"`
+	Unicode             bool      `json:"unicode,omitempty"`
+	Utf8                bool      `json:"utf8,omitempty"`
 }
 
 type SmsTextParams struct {
@@ -25,29 +33,31 @@ type SmsTextParams struct {
 	ReturnMessageId bool `json:"return_msg_id,omitempty"`
 }
 
+type SmsResource resource
+
 type SmsResponse struct {
-	Debug    string  `json:"debug"`
-	Balance  float64 `json:"balance"`
-	Messages []struct {
-		Encoding  string    `json:"encoding"`
-		Error     *string   `json:"error"`
-		ErrorText *string   `json:"error_text"`
-		Id        *string   `json:"id"`
-		Label     *string   `json:"label"`
-		Messages  *[]string `json:"messages,omitempty"`
-		Parts     int64     `json:"parts"`
-		Price     float64   `json:"price"`
-		Recipient string    `json:"recipient"`
-		Sender    string    `json:"sender"`
-		Success   bool      `json:"success"`
-		Text      string    `json:"text"`
-	} `json:"messages"`
-	SmsType    string     `json:"sms_type"`
-	Success    StatusCode `json:"success"`
-	TotalPrice float64    `json:"total_price"`
+	Debug      string               `json:"debug"`
+	Balance    float64              `json:"balance"`
+	Messages   []SmsResponseMessage `json:"messages"`
+	SmsType    string               `json:"sms_type"`
+	Success    StatusCode           `json:"success"`
+	TotalPrice float64              `json:"total_price"`
 }
 
-type SmsResource resource
+type SmsResponseMessage struct {
+	Encoding  string    `json:"encoding"`
+	Error     *string   `json:"error"`
+	ErrorText *string   `json:"error_text"`
+	Id        *string   `json:"id"`
+	Label     *string   `json:"label"`
+	Messages  *[]string `json:"messages,omitempty"`
+	Parts     int64     `json:"parts"`
+	Price     float64   `json:"price"`
+	Recipient string    `json:"recipient"`
+	Sender    string    `json:"sender"`
+	Success   bool      `json:"success"`
+	Text      string    `json:"text"`
+}
 
 func (api *SmsResource) request(p interface{}) (*string, error) {
 	res, err := api.client.request("sms", "POST", p)

@@ -1,7 +1,9 @@
 package sms77api
 
 import (
+	b64 "encoding/base64"
 	a "github.com/stretchr/testify/assert"
+	"net/url"
 	"os"
 	"testing"
 )
@@ -33,4 +35,17 @@ func GetClient() (*Sms77API, bool) {
 	testOptions.ApiKey = apiKey
 
 	return New(testOptions), dummy
+}
+
+func stringToBase64(text string) string {
+	return b64.StdEncoding.EncodeToString([]byte(text))
+}
+
+func parseURL(text string) *url.URL {
+	u, err := url.Parse(text)
+	if err != nil {
+		panic(err)
+	}
+
+	return u
 }
