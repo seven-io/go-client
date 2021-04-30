@@ -2,38 +2,40 @@ package sms77api
 
 import (
 	a "github.com/stretchr/testify/assert"
+	"regexp"
 	"strings"
 	"testing"
 )
 
 func TestPricingCsv(t *testing.T) {
-	var csv, csvErr = client.Pricing.Csv(PricingParams{Country: "de"})
+	var params = PricingParams{Country: "DE"}
+	var csv, csvErr = client.Pricing.Csv(params)
 	if nil == csvErr {
 		a.NotEmpty(t, csv)
 
-		csv = strings.ReplaceAll(csv, "\"", "")
 		lines := strings.Split(csv, "\n")
 
 		for i, line := range lines {
-			cols := strings.Split(line, ";")
-
+			line = strings.ReplaceAll(line, "; ", ";")
+			cols := regexp.MustCompile(`"(.*?)"`).FindAllString(line, -1)
+			for i, col := range cols {
+				cols[i] = strings.ReplaceAll(col, `"`, "")
+			}
 			a.Len(t, cols, len(PricingCsvHeaders))
 
-			for ii, h := range PricingCsvHeaders {
-				if 0 == i {
+			if 0 == i {
+				for ii, h := range PricingCsvHeaders {
 					a.Equal(t, h, cols[ii])
-				} else {
-					a.NotEqual(t, h, cols[ii])
 				}
+			} else {
+				a.Equal(t, params.Country, cols[PricingColumnCountryCode])
+				a.NotEmpty(t, cols[PricingColumnCountryName])
+				a.NotEmpty(t, cols[PricingColumnCountryPrefix])
+				a.NotEmpty(t, cols[PricingColumnMcc])
+				a.NotEmpty(t, cols[PricingColumnNetworkName])
+				a.NotEmpty(t, cols[PricingColumnPrice])
+				a.NotEmpty(t, cols[PricingColumnMncs])
 			}
-
-			a.NotEmpty(t, cols[PricingHeaderCountryCode])
-			a.NotEmpty(t, cols[PricingHeaderCountryName])
-			a.NotEmpty(t, cols[PricingHeaderCountryPrefix])
-			a.NotEmpty(t, cols[PricingHeaderMcc])
-			a.NotEmpty(t, cols[PricingHeaderMncs])
-			a.NotEmpty(t, cols[PricingHeaderNetworkName])
-			a.NotEmpty(t, cols[PricingHeaderPrice])
 		}
 	} else {
 		a.Empty(t, csv)

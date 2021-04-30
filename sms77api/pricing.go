@@ -61,12 +61,26 @@ var PricingCsvHeaders = map[PricingCsvHeader]string{
 	PricingHeaderCountryName:   "countryName",
 	PricingHeaderCountryPrefix: "countryPrefix",
 	PricingHeaderMcc:           "mcc",
-	PricingHeaderMncs:          "mncs",
+	PricingHeaderMncs:          "mnc",
 	PricingHeaderNetworkName:   "networkName",
 	PricingHeaderPrice:         "price",
 	PricingHeaderFeatures:      "features",
 	PricingHeaderComment:       "comment",
 }
+
+type PricingCsvColumn int
+
+const (
+	PricingColumnCountryCode PricingCsvColumn = iota
+	PricingColumnCountryName
+	PricingColumnCountryPrefix
+	PricingColumnMcc
+	PricingColumnNetworkName
+	PricingColumnPrice
+	PricingColumnFeatures
+	PricingColumnComment
+	PricingColumnMncs
+)
 
 const EndpointPricing = "pricing"
 
