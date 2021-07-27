@@ -14,6 +14,7 @@ type HookRequestMethod string
 
 const (
 	HookRequestMethodGet  HookRequestMethod = "GET"
+	HookRequestMethodJson HookRequestMethod = "JSON"
 	HookRequestMethodPost HookRequestMethod = "POST"
 )
 

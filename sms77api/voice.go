@@ -12,10 +12,11 @@ type Voice struct {
 }
 
 type VoiceParams struct {
-	To   string `json:"to"`
-	Text string `json:"text"`
-	Xml  bool   `json:"xml,omitempty"`
-	From string `json:"from,omitempty"`
+	Debug bool   `json:"debug,omitempty"`
+	To    string `json:"to"`
+	Text  string `json:"text"`
+	Xml   bool   `json:"xml,omitempty"`
+	From  string `json:"from,omitempty"`
 }
 
 type VoiceResource resource

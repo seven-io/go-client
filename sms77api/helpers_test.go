@@ -5,10 +5,13 @@ import (
 	a "github.com/stretchr/testify/assert"
 	"net/url"
 	"os"
+	"strconv"
 	"testing"
+	"time"
 )
 
 const VinTelekom = "4915126716517"
+const VinEplus = "491771783130"
 
 var client, testIsDummy = GetClient()
 var testBadClient = New(Options{})
@@ -41,6 +44,10 @@ func stringToBase64(text string) string {
 	return b64.StdEncoding.EncodeToString([]byte(text))
 }
 
+func parseFloat(line string) (float64, error) {
+	return strconv.ParseFloat(line, 32)
+}
+
 func parseURL(text string) *url.URL {
 	u, err := url.Parse(text)
 	if err != nil {
@@ -48,4 +55,8 @@ func parseURL(text string) *url.URL {
 	}
 
 	return u
+}
+
+func timestampString() string {
+	return strconv.FormatInt(time.Now().Unix(), 10)
 }

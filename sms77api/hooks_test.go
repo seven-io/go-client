@@ -25,8 +25,10 @@ func TestHooksRead(t *testing.T) {
 			a.Greater(t, len(hook.Created), 0)
 			a.Greater(t, toUint(hook.Id, 64), uint64(0))
 			a.Greater(t, len(hook.TargetUrl), 0)
-			a.Contains(t, [...]HookEventType{HookEventTypeSmsStatus, HookEventTypeVoiceStatus, HookEventTypeInboundSms}, hook.EventType)
-			a.Contains(t, [...]HookRequestMethod{HookRequestMethodGet, HookRequestMethodPost}, hook.RequestMethod)
+			a.Contains(t, [...]HookEventType{HookEventTypeSmsStatus, HookEventTypeVoiceStatus, HookEventTypeInboundSms},
+				hook.EventType)
+			a.Contains(t, [...]HookRequestMethod{HookRequestMethodGet, HookRequestMethodJson, HookRequestMethodPost},
+				hook.RequestMethod)
 		}
 	}
 }

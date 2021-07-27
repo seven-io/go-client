@@ -6,12 +6,11 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 var testSmsBaseParams = SmsBaseParams{
-	Debug:               true,
-	Delay:               strconv.FormatInt(time.Now().Unix(), 10),
+	Debug:               false,
+	Delay:               timestampString(),
 	Files:               nil,
 	Flash:               true,
 	ForeignId:           "GoTestForeignId",
@@ -29,6 +28,12 @@ var testSmsBaseParams = SmsBaseParams{
 
 func TestSmsResource_Json(t *testing.T) {
 	testJson(t, testSmsBaseParams, true)
+}
+
+func TestSmsResource_Json_Debug(t *testing.T) {
+	var params = testSmsBaseParams
+	params.Debug = true
+	testJson(t, params, true)
 }
 
 func TestSmsResource_Json_Files(t *testing.T) {
@@ -96,10 +101,6 @@ func TestSmsResource_Text_With_Id_Detailed(t *testing.T) {
 	})
 }
 
-func parseFloat(line string) (float64, error) {
-	return strconv.ParseFloat(line, 10)
-}
-
 func testJson(t *testing.T, params SmsBaseParams, assertText bool) *SmsResponse {
 	json, err := client.Sms.Json(params)
 
@@ -137,8 +138,8 @@ func testJson(t *testing.T, params SmsBaseParams, assertText bool) *SmsResponse 
 				a.Equal(t, float64(0), msg.Price)
 			} else {
 				var id, _ = strconv.ParseInt(*msg.Id, 10, 0)
-				a.GreaterOrEqual(t, 1, id)
-				a.Greater(t, 0, msg.Price)
+				a.GreaterOrEqual(t, id, int64(1))
+				a.Greater(t, msg.Price, float64(0))
 			}
 		}
 		a.GreaterOrEqual(t, json.TotalPrice, float64(0))
@@ -163,10 +164,10 @@ func testText(t *testing.T, params SmsTextParams) {
 		if params.ReturnMessageId {
 			var id, _ = strconv.ParseInt(lines[index], 10, 0)
 
-			if testIsDummy {
-				a.Equal(t, 1234567890, id)
+			if testIsDummy || params.Debug {
+				a.Equal(t, int64(1234567890), id)
 			} else {
-				a.GreaterOrEqual(t, id, 1)
+				a.GreaterOrEqual(t, id, int64(1))
 			}
 
 			index++
@@ -185,7 +186,7 @@ func testText(t *testing.T, params SmsTextParams) {
 				return parseFloat(parseLine(rowIndex, lineIndex))
 			}
 
-			var expensed, _ = parseFloat(lines[index])
+			var expensed, _ = toFloat(index, 1)
 			index++
 			var price, _ = toFloat(index, 1)
 			index++
@@ -216,7 +217,12 @@ func testText(t *testing.T, params SmsTextParams) {
 				a.Zero(t, expensed)
 				a.Equal(t, true, debug)
 			} else {
-				a.NotZero(t, expensed)
+				if params.Debug {
+					a.Zero(t, expensed)
+				} else {
+					a.NotZero(t, expensed)
+				}
+
 				a.Equal(t, params.Debug, debug)
 			}
 		}

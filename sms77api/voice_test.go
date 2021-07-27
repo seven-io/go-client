@@ -9,18 +9,10 @@ func testVoiceBuildParams(p VoiceParams) VoiceParams {
 	text := "Just testing ;-)"
 
 	if p.Xml {
-		text = `
-		<?xml version="1.0" encoding="UTF-8"?>
-			<Response>
-				<Say voice="woman" language="en-EN">
-					Your glasses are ready for pickup.
-				</Say>
-			<Record maxlength="20" />
-		</Response>
-	`
+		text = `<Response><Play digits="1wwwwww4"></Play><Say>Hello Sir!</Say></Response>`
 	}
 
-	p.From = "Go-Test"
+	p.From = VinEplus
 	p.Text = text
 	p.To = VinTelekom
 
@@ -48,17 +40,9 @@ func testVoiceText(p VoiceParams, t *testing.T) {
 }
 
 func testVoiceAssert(p VoiceParams, v Voice, t *testing.T) {
-	getVoiceExpectation := func(p VoiceParams) Voice {
-		if p.Xml {
-			return Voice{Code: 203, Cost: 0.1, Id: 0}
-		}
+	if testIsDummy || p.Debug {
+		var x = Voice{Code: 100, Cost: 0, Id: 123456789}
 
-		return Voice{Code: 100, Cost: 0, Id: 123456789}
-	}
-
-	x := getVoiceExpectation(p)
-
-	if testIsDummy {
 		a.Equal(t, x.Code, v.Code)
 		a.Equal(t, x.Id, v.Id)
 		a.Equal(t, x.Cost, v.Cost)
