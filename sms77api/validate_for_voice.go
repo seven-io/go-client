@@ -1,6 +1,9 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type ValidateForVoiceParams struct {
 	Callback string `json:"callback"`
@@ -20,7 +23,11 @@ type ValidateForVoiceResponse struct {
 type ValidateForVoiceResource resource
 
 func (api *ValidateForVoiceResource) Get(p ValidateForVoiceParams) (o *ValidateForVoiceResponse, e error) {
-	r, e := api.client.request("validate_for_voice", "GET", p)
+	return api.GetContext(context.Background(), p)
+}
+
+func (api *ValidateForVoiceResource) GetContext(ctx context.Context, p ValidateForVoiceParams) (o *ValidateForVoiceResponse, e error) {
+	r, e := api.client.request(ctx, "validate_for_voice", "GET", p)
 
 	if nil != e {
 		return

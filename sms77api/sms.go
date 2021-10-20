@@ -1,6 +1,9 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type SmsFile struct {
 	Contents string  `json:"contents"`
@@ -59,8 +62,8 @@ type SmsResponseMessage struct {
 	Text      string    `json:"text"`
 }
 
-func (api *SmsResource) request(p interface{}) (*string, error) {
-	res, err := api.client.request("sms", "POST", p)
+func (api *SmsResource) request(ctx context.Context, p interface{}) (*string, error) {
+	res, err := api.client.request(ctx, "sms", "POST", p)
 
 	if err != nil {
 		return nil, err
@@ -70,16 +73,23 @@ func (api *SmsResource) request(p interface{}) (*string, error) {
 }
 
 func (api *SmsResource) Text(p SmsTextParams) (res *string, err error) {
-	return api.request(p)
+	return api.TextContext(context.Background(), p)
+}
+
+func (api *SmsResource) TextContext(ctx context.Context, p SmsTextParams) (res *string, err error) {
+	return api.request(ctx, p)
 }
 
 func (api *SmsResource) Json(p SmsBaseParams) (o *SmsResponse, err error) {
+	return api.JsonContext(context.Background(), p)
+}
+func (api *SmsResource) JsonContext(ctx context.Context, p SmsBaseParams) (o *SmsResponse, err error) {
 	type SmsJsonParams struct {
 		SmsBaseParams
 		Json bool `json:"json,omitempty"`
 	}
 
-	res, err := api.request(SmsJsonParams{
+	res, err := api.request(ctx, SmsJsonParams{
 		SmsBaseParams: p,
 		Json:          true,
 	})

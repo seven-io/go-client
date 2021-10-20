@@ -1,6 +1,7 @@
 package sms77api
 
 import (
+	"context"
 	"encoding/json"
 )
 
@@ -68,7 +69,11 @@ func BuildJournalParams(journalType JournalType, p *JournalParams) *JournalParam
 }
 
 func (api *JournalResource) Inbound(p *JournalParams) ([]JournalInbound, error) {
-	res, err := api.client.request("journal", "GET", BuildJournalParams(JournalTypeInbound, p))
+	return api.InboundContext(context.Background(), p)
+}
+
+func (api *JournalResource) InboundContext(ctx context.Context, p *JournalParams) ([]JournalInbound, error) {
+	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeInbound, p))
 
 	if err != nil {
 		return nil, err
@@ -84,7 +89,11 @@ func (api *JournalResource) Inbound(p *JournalParams) ([]JournalInbound, error) 
 }
 
 func (api *JournalResource) Outbound(p *JournalParams) ([]JournalOutbound, error) {
-	res, err := api.client.request("journal", "GET", BuildJournalParams(JournalTypeOutbound, p))
+	return api.OutboundContext(context.Background(), p)
+}
+
+func (api *JournalResource) OutboundContext(ctx context.Context, p *JournalParams) ([]JournalOutbound, error) {
+	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeOutbound, p))
 
 	if err != nil {
 		return nil, err
@@ -100,7 +109,11 @@ func (api *JournalResource) Outbound(p *JournalParams) ([]JournalOutbound, error
 }
 
 func (api *JournalResource) Replies(p *JournalParams) ([]JournalReplies, error) {
-	res, err := api.client.request("journal", "GET", BuildJournalParams(JournalTypeReplies, p))
+	return api.RepliesContext(context.Background(), p)
+}
+
+func (api *JournalResource) RepliesContext(ctx context.Context, p *JournalParams) ([]JournalReplies, error) {
+	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeReplies, p))
 
 	if err != nil {
 		return nil, err
@@ -116,7 +129,11 @@ func (api *JournalResource) Replies(p *JournalParams) ([]JournalReplies, error) 
 }
 
 func (api *JournalResource) Voice(p *JournalParams) ([]JournalVoice, error) {
-	res, err := api.client.request("journal", "GET", BuildJournalParams(JournalTypeVoice, p))
+	return api.VoiceContext(context.Background(), p)
+}
+
+func (api *JournalResource) VoiceContext(ctx context.Context, p *JournalParams) ([]JournalVoice, error) {
+	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeVoice, p))
 
 	if err != nil {
 		return nil, err

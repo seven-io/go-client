@@ -1,6 +1,9 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type PricingResource resource
 
@@ -85,7 +88,11 @@ const (
 const EndpointPricing = "pricing"
 
 func (api *PricingResource) Csv(p PricingParams) (string, error) {
-	res, err := api.client.request(EndpointPricing, "GET", PricingApiParams{
+	return api.CsvContext(context.Background(), p)
+}
+
+func (api *PricingResource) CsvContext(ctx context.Context, p PricingParams) (string, error) {
+	res, err := api.client.request(ctx, EndpointPricing, "GET", PricingApiParams{
 		PricingParams: p,
 		Format:        PricingFormatCsv,
 	})
@@ -98,7 +105,10 @@ func (api *PricingResource) Csv(p PricingParams) (string, error) {
 }
 
 func (api *PricingResource) Json(p PricingParams) (*PricingResponse, error) {
-	res, err := api.client.request(EndpointPricing, "GET", PricingApiParams{PricingParams: p})
+	return api.JsonContext(context.Background(), p)
+}
+func (api *PricingResource) JsonContext(ctx context.Context, p PricingParams) (*PricingResponse, error) {
+	res, err := api.client.request(ctx, EndpointPricing, "GET", PricingApiParams{PricingParams: p})
 
 	if err != nil {
 		return nil, err

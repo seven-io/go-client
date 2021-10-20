@@ -1,6 +1,7 @@
 package sms77api
 
 import (
+	"context"
 	"encoding/json"
 )
 
@@ -39,7 +40,11 @@ const (
 )
 
 func (api *AnalyticsResource) Get(p *AnalyticsParams) (o []Analytics, err error) {
-	res, err := api.client.request("analytics", "GET", p)
+	return api.GetContext(context.Background(), p)
+}
+
+func (api *AnalyticsResource) GetContext(ctx context.Context, p *AnalyticsParams) (o []Analytics, err error) {
+	res, err := api.client.request(ctx, "analytics", "GET", p)
 	if err != nil {
 		return nil, err
 	}
