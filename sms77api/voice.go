@@ -1,6 +1,7 @@
 package sms77api
 
 import (
+	"context"
 	"strconv"
 	"strings"
 )
@@ -36,7 +37,11 @@ func makeVoice(res string) Voice {
 }
 
 func (api *VoiceResource) Text(p VoiceParams) (*string, error) {
-	res, err := api.client.request("voice", "POST", p)
+	return api.TextContext(context.Background(), p)
+}
+
+func (api *VoiceResource) TextContext(ctx context.Context, p VoiceParams) (*string, error) {
+	res, err := api.client.request(ctx, "voice", "POST", p)
 
 	if err != nil {
 		return nil, err

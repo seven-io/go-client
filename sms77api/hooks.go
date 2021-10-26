@@ -1,6 +1,9 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type HookEventType string
 
@@ -59,12 +62,16 @@ type HooksSubscribeResponse struct {
 type HooksResource resource
 
 func (api *HooksResource) Request(p HooksParams) (interface{}, error) {
+	return api.RequestContext(context.Background(), p)
+}
+
+func (api *HooksResource) RequestContext(ctx context.Context, p HooksParams) (interface{}, error) {
 	method := "POST"
 	if p.Action == HooksActionRead {
 		method = "GET"
 	}
 
-	res, err := api.client.request("hooks", method, p)
+	res, err := api.client.request(ctx, "hooks", method, p)
 
 	if err != nil {
 		return nil, err

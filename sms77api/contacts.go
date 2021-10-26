@@ -1,6 +1,9 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type ContactsResource resource
 
@@ -114,16 +117,24 @@ func newContactsEditJsonApiParams(p ContactEditParams, json bool) contactsEditJs
 	}
 }
 
-func (api *ContactsResource) request(method HttpMethod, params interface{}) (string, error) {
-	return api.client.request("contacts", string(method), params)
+func (api *ContactsResource) request(ctx context.Context, method HttpMethod, params interface{}) (string, error) {
+	return api.client.request(ctx, "contacts", string(method), params)
 }
 
 func (api *ContactsResource) ReadCsv(p ContactsReadParams) (string, error) {
-	return api.request(HttpMethodGet, newReadApiParams(p, false))
+	return api.ReadCsvContext(context.Background(), p)
+}
+
+func (api *ContactsResource) ReadCsvContext(ctx context.Context, p ContactsReadParams) (string, error) {
+	return api.request(ctx, HttpMethodGet, newReadApiParams(p, false))
 }
 
 func (api *ContactsResource) ReadJson(p ContactsReadParams) (a []Contact, e error) {
-	s, e := api.request(HttpMethodGet, newReadApiParams(p, true))
+	return api.ReadJsonContext(context.Background(), p)
+}
+
+func (api *ContactsResource) ReadJsonContext(ctx context.Context, p ContactsReadParams) (a []Contact, e error) {
+	s, e := api.request(ctx, HttpMethodGet, newReadApiParams(p, true))
 
 	if nil != e {
 		return
@@ -135,11 +146,19 @@ func (api *ContactsResource) ReadJson(p ContactsReadParams) (a []Contact, e erro
 }
 
 func (api *ContactsResource) CreateCsv() (string, error) {
-	return api.request(HttpMethodPost, newContactsCreateApiParams(false))
+	return api.CreateCsvContext(context.Background())
+}
+
+func (api *ContactsResource) CreateCsvContext(ctx context.Context) (string, error) {
+	return api.request(ctx, HttpMethodPost, newContactsCreateApiParams(false))
 }
 
 func (api *ContactsResource) CreateJson() (o ContactsCreateJsonResponse, e error) {
-	s, e := api.request(HttpMethodGet, newContactsCreateApiParams(true))
+	return api.CreateJsonContext(context.Background())
+}
+
+func (api *ContactsResource) CreateJsonContext(ctx context.Context) (o ContactsCreateJsonResponse, e error) {
+	s, e := api.request(ctx, HttpMethodGet, newContactsCreateApiParams(true))
 
 	e = json.Unmarshal([]byte(s), &o)
 
@@ -147,11 +166,19 @@ func (api *ContactsResource) CreateJson() (o ContactsCreateJsonResponse, e error
 }
 
 func (api *ContactsResource) DeleteCsv(p ContactsDeleteParams) (string, error) {
-	return api.request(HttpMethodPost, newContactsDeleteApiParams(p, false))
+	return api.DeleteCsvContext(context.Background(), p)
+}
+
+func (api *ContactsResource) DeleteCsvContext(ctx context.Context, p ContactsDeleteParams) (string, error) {
+	return api.request(ctx, HttpMethodPost, newContactsDeleteApiParams(p, false))
 }
 
 func (api *ContactsResource) DeleteJson(p ContactsDeleteParams) (o ContactsDeleteJsonResponse, e error) {
-	s, e := api.request(HttpMethodGet, newContactsDeleteApiParams(p, true))
+	return api.DeleteJsonContext(context.Background(), p)
+}
+
+func (api *ContactsResource) DeleteJsonContext(ctx context.Context, p ContactsDeleteParams) (o ContactsDeleteJsonResponse, e error) {
+	s, e := api.request(ctx, HttpMethodGet, newContactsDeleteApiParams(p, true))
 
 	e = json.Unmarshal([]byte(s), &o)
 
@@ -159,11 +186,19 @@ func (api *ContactsResource) DeleteJson(p ContactsDeleteParams) (o ContactsDelet
 }
 
 func (api *ContactsResource) EditCsv(p ContactEditParams) (string, error) {
-	return api.request(HttpMethodGet, newContactsEditJsonApiParams(p, false))
+	return api.EditCsvContext(context.Background(), p)
+}
+
+func (api *ContactsResource) EditCsvContext(ctx context.Context, p ContactEditParams) (string, error) {
+	return api.request(ctx, HttpMethodGet, newContactsEditJsonApiParams(p, false))
 }
 
 func (api *ContactsResource) EditJson(p ContactEditParams) (o ContactsEditJsonResponse, e error) {
-	s, e := api.request(HttpMethodGet, newContactsEditJsonApiParams(p, true))
+	return api.EditJsonContext(context.Background(), p)
+}
+
+func (api *ContactsResource) EditJsonContext(ctx context.Context, p ContactEditParams) (o ContactsEditJsonResponse, e error) {
+	s, e := api.request(ctx, HttpMethodGet, newContactsEditJsonApiParams(p, true))
 
 	e = json.Unmarshal([]byte(s), &o)
 

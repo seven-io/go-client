@@ -1,6 +1,7 @@
 package sms77api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -109,15 +110,15 @@ func New(options Options) *Sms77API {
 	return c
 }
 
-func (api *Sms77API) get(endpoint string, data map[string]interface{}) (string, error) {
-	return api.request(endpoint, http.MethodGet, data)
+func (api *Sms77API) get(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
+	return api.request(ctx, endpoint, http.MethodGet, data)
 }
 
-func (api *Sms77API) post(endpoint string, data map[string]interface{}) (string, error) {
-	return api.request(endpoint, http.MethodPost, data)
+func (api *Sms77API) post(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
+	return api.request(ctx, endpoint, http.MethodPost, data)
 }
 
-func (api *Sms77API) request(endpoint string, method string, data interface{}) (string, error) {
+func (api *Sms77API) request(ctx context.Context, endpoint string, method string, data interface{}) (string, error) {
 	createRequestPayload := func() string {
 		params := url.Values{}
 
@@ -177,7 +178,7 @@ func (api *Sms77API) request(endpoint string, method string, data interface{}) (
 			log.Printf("%s %s", method, uri)
 		}
 
-		req, err = http.NewRequest(method, uri, strings.NewReader(body))
+		req, err = http.NewRequestWithContext(ctx, method, uri, strings.NewReader(body))
 
 		if nil != err {
 			log.Println(err.Error())

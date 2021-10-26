@@ -1,11 +1,18 @@
 package sms77api
 
-import "strconv"
+import (
+	"context"
+	"strconv"
+)
 
 type BalanceResource resource
 
 func (api *BalanceResource) Get() (*float64, error) {
-	res, err := api.client.request("balance", "GET", nil)
+	return api.GetContext(context.Background())
+}
+
+func (api *BalanceResource) GetContext(ctx context.Context) (*float64, error) {
+	res, err := api.client.request(ctx, "balance", "GET", nil)
 
 	if err != nil {
 		return nil, err

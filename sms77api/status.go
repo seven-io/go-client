@@ -1,6 +1,7 @@
 package sms77api
 
 import (
+	"context"
 	"errors"
 	"strings"
 )
@@ -40,7 +41,10 @@ func makeStatus(res *string) (s *Status, e error) {
 const StatusApiCodeInvalidMessageId = "901"
 
 func (api *StatusResource) Text(p StatusParams) (*string, error) {
-	res, err := api.client.request("status", "POST", p)
+	return api.TextContext(context.Background(), p)
+}
+func (api *StatusResource) TextContext(ctx context.Context, p StatusParams) (*string, error) {
+	res, err := api.client.request(ctx, "status", "POST", p)
 
 	if err != nil {
 		return nil, err

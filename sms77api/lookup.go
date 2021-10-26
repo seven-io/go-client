@@ -1,6 +1,9 @@
 package sms77api
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type Carrier struct {
 	Country     string `json:"country"`
@@ -76,7 +79,11 @@ type Mnp struct {
 type LookupResource resource
 
 func (api *LookupResource) Post(p LookupParams) (interface{}, error) {
-	res, err := api.client.request("lookup", "GET", p)
+	return api.PostContext(context.Background(), p)
+}
+
+func (api *LookupResource) PostContext(ctx context.Context, p LookupParams) (interface{}, error) {
+	res, err := api.client.request(ctx, "lookup", "GET", p)
 
 	if err != nil {
 		return nil, err
