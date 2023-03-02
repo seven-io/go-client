@@ -1,12 +1,12 @@
-![Sms77.io Logo](https://www.sms77.io/wp-content/uploads/2019/07/sms77-Logo-400x79.png "Sms77.io Logo")
+![](https://www.seven.io/wp-content/uploads/Logo.svg "seven Logo")
 
 # Official API Client for [Go](https://golang.org/)
 
 ## Installation
 
-Requires Go 1.11+ for modules support.
+Requires Go 1.13+.
 
-```go get github.com/sms77io/go-client/sms77api```
+```go get github.com/seven-io/go-client/sms77api```
 
 ### Usage
 
@@ -15,7 +15,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/sms77io/go-client/sms77api"
+	"github.com/seven-io/go-client/sms77api"
 )
 
 func main() {
@@ -39,6 +39,6 @@ running `go test`.
 
 ##### Support
 
-Need help? Feel free to [contact us](https://www.sms77.io/en/company/contact/).
+Need help? Feel free to [contact us](https://www.seven.io/en/company/contact/).
 
-[![MIT](https://img.shields.io/badge/License-MIT-teal.svg)](./LICENSE)
+[![MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)

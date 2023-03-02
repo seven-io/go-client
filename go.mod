@@ -1,5 +1,5 @@
-module github.com/sms77io/go-client
+module github.com/seven-io/go-client
 
-go 1.15
+go 1.13
 
 require github.com/stretchr/testify v1.6.1

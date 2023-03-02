@@ -11,6 +11,9 @@ const (
 	HookEventTypeSmsStatus   HookEventType = "dlr"
 	HookEventTypeVoiceStatus HookEventType = "voice_status"
 	HookEventTypeInboundSms  HookEventType = "sms_mo"
+	HookEventTypeTracking    HookEventType = "tracking"
+	HookEventTypeAll         HookEventType = "all"
+	HookEventTypeVoiceCall   HookEventType = "voice_call"
 )
 
 type HookRequestMethod string
