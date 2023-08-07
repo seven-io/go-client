@@ -27,10 +27,10 @@ func AssertKeylessCall(t *testing.T, res interface{}, err error) {
 
 func GetClient() (*Sms77API, bool) {
 	var dummy = true
-	var apiKey = os.Getenv("SMS77_DUMMY_API_KEY")
+	var apiKey = os.Getenv("SEVEN_API_KEY_SANDBOX")
 
 	if "" == apiKey {
-		apiKey = os.Getenv("SMS77_API_KEY")
+		apiKey = os.Getenv("SEVEN_API_KEY")
 
 		dummy = false
 	}

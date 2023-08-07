@@ -37,6 +37,7 @@ type Sms77API struct {
 	Pricing          *PricingResource
 	Sms              *SmsResource
 	Status           *StatusResource
+	Subaccounts      *SubaccountsResource
 	ValidateForVoice *ValidateForVoiceResource
 	Voice            *VoiceResource
 }
@@ -104,6 +105,7 @@ func New(options Options) *Sms77API {
 	c.Pricing = (*PricingResource)(&c.base)
 	c.Sms = (*SmsResource)(&c.base)
 	c.Status = (*StatusResource)(&c.base)
+	c.Subaccounts = (*SubaccountsResource)(&c.base)
 	c.ValidateForVoice = (*ValidateForVoiceResource)(&c.base)
 	c.Voice = (*VoiceResource)(&c.base)
 
@@ -156,7 +158,7 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 	}
 
 	initClient := func() (req *http.Request, err error) {
-		var uri = fmt.Sprintf("https://gateway.sms77.io/api/%s", endpoint)
+		var uri = fmt.Sprintf("https://gateway.seven.io/api/%s", endpoint)
 		var qs = createRequestPayload()
 		var headers = map[string]string{
 			"Authorization": fmt.Sprintf("Basic %s", api.ApiKey),

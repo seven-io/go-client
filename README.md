@@ -33,8 +33,8 @@ func main() {
 
 #### Tests
 
-Some basic tests are implemented. Set environment variable `SMS77_API_KEY` for live API keys. Set environment
-variable `SMS77_DUMMY_API_KEY` for sandbox API keys. The dummy key takes preference if both are set. Run all suites by
+Some basic tests are implemented. Set environment variable `SEVEN_API_KEY` for live API keys. Set environment
+variable `SEVEN_API_KEY_SANDBOX` for sandbox API keys. The dummy key takes preference if both are set. Run all suites by
 running `go test`.
 
 ##### Support
