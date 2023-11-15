@@ -34,6 +34,8 @@ const (
 
 type Hook struct {
 	Created       string            `json:"created"`
+	Enabled       bool              `json:"enabled"`
+	EventFilter   *string           `json:"event_filter"`
 	EventType     HookEventType     `json:"event_type"`
 	Id            string            `json:"id"`
 	RequestMethod HookRequestMethod `json:"request_method"`
@@ -42,6 +44,7 @@ type Hook struct {
 
 type HooksParams struct {
 	Action        HooksAction       `json:"action"`
+	EventFilter   *string           `json:"event_filter,omitempty"`
 	EventType     HookEventType     `json:"event_type,omitempty"`
 	Id            int               `json:"id,omitempty"`
 	RequestMethod HookRequestMethod `json:"request_method,omitempty"`

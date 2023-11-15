@@ -43,6 +43,7 @@ func TestHooksRead(t *testing.T) {
 func TestHooksSubscribeAndUnsubscribe(t *testing.T) {
 	subscribed := hooks(HooksParams{
 		Action:        HooksActionSubscribe,
+		EventFilter:   nil,
 		EventType:     HookEventTypeInboundSms,
 		RequestMethod: HookRequestMethodGet,
 		TargetUrl:     fmt.Sprintf("https://test.tld/go-client/%d", time.Now().Unix()),
