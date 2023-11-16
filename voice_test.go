@@ -1,4 +1,4 @@
-package sms77api
+package sevenapi
 
 import (
 	a "github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func testVoiceJson(p VoiceParams, t *testing.T) {
 	v, e := client.Voice.Json(testVoiceBuildParams(p))
 
 	if nil == e {
-		testVoiceAssert(p, v, t)
+		testVoiceAssert(v, t)
 	} else {
 		a.Nil(t, v)
 	}
@@ -33,14 +33,14 @@ func testVoiceText(p VoiceParams, t *testing.T) {
 	res, err := client.Voice.Text(testVoiceBuildParams(p))
 
 	if nil == err {
-		testVoiceAssert(p, makeVoice(*res), t)
+		testVoiceAssert(makeVoice(*res), t)
 	} else {
 		a.Nil(t, res)
 	}
 }
 
-func testVoiceAssert(p VoiceParams, v Voice, t *testing.T) {
-	if testIsDummy || p.Debug {
+func testVoiceAssert(v Voice, t *testing.T) {
+	if testIsDummy {
 		var x = Voice{Code: 100, Cost: 0, Id: 123456789}
 
 		a.Equal(t, x.Code, v.Code)

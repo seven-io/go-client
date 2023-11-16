@@ -6,7 +6,7 @@
 
 Requires Go 1.13+.
 
-```go get github.com/seven-io/go-client/sms77api```
+```go get github.com/seven-io/go-client```
 
 ### Usage
 
@@ -15,12 +15,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/seven-io/go-client/sms77api"
+	"github.com/seven-io/go-client"
 )
 
 func main() {
-	var client = sms77api.New(sms77api.Options{
-		ApiKey: "InsertSuperSecretSms77ApiKey!",
+	var client = sevenapi.Client.New(sevenapi.Options{
+		ApiKey: "InsertSuperSecretSevenApiKey!",
 	})
 	var balance, err = client.Balance.Get()
 	if err == nil {
@@ -33,12 +33,13 @@ func main() {
 
 #### Tests
 
-Some basic tests are implemented. Set environment variable `SEVEN_API_KEY` for live API keys. Set environment
-variable `SEVEN_API_KEY_SANDBOX` for sandbox API keys. The dummy key takes preference if both are set. Run all suites by
-running `go test`.
+Some basic tests are implemented.
+Set environment variable `SEVEN_API_KEY` for live API keys.
+Set environment variable `SEVEN_API_KEY_SANDBOX` for sandbox API keys.
+The dummy key takes preference if both are set. Run all suites by running `go test`.
 
 ##### Support
 
-Need help? Feel free to [contact us](https://www.seven.io/en/company/contact/).
+Need help? Feel free to [contact us](https://www.seven.io/en/company/contact).
 
 [![MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)

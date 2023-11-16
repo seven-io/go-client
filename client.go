@@ -1,4 +1,4 @@
-package sms77api
+package sevenapi
 
 import (
 	"context"
@@ -20,10 +20,10 @@ type Options struct {
 	SentWith string
 }
 type resource struct {
-	client *Sms77API
+	client *Client
 }
 type StatusCode string
-type Sms77API struct {
+type Client struct {
 	Options
 	client *http.Client
 	base   resource // Instead of allocating a struct for each service we reuse a one
@@ -87,12 +87,12 @@ var StatusCodes = map[StatusCode]string{
 	StatusCodeErrorServerIp:               "ErrorServerIp",
 }
 
-func New(options Options) *Sms77API {
+func New(options Options) *Client {
 	if "" == options.SentWith {
 		options.SentWith = defaultOptionSentWith
 	}
 
-	c := &Sms77API{client: http.DefaultClient}
+	c := &Client{client: http.DefaultClient}
 	c.Options = options
 	c.base.client = c
 
@@ -112,15 +112,15 @@ func New(options Options) *Sms77API {
 	return c
 }
 
-func (api *Sms77API) get(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
+func (api *Client) get(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
 	return api.request(ctx, endpoint, http.MethodGet, data)
 }
 
-func (api *Sms77API) post(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
+func (api *Client) post(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
 	return api.request(ctx, endpoint, http.MethodPost, data)
 }
 
-func (api *Sms77API) request(ctx context.Context, endpoint string, method string, data interface{}) (string, error) {
+func (api *Client) request(ctx context.Context, endpoint string, method string, data interface{}) (string, error) {
 	createRequestPayload := func() string {
 		params := url.Values{}
 
