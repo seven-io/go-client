@@ -1,4 +1,5 @@
-![](https://www.seven.io/wp-content/uploads/Logo.svg "seven Logo")
+<img src="https://www.seven.io/wp-content/uploads/Logo.svg" width="250" />
+
 
 # Official API Client for [Go](https://golang.org/)
 
