@@ -35,6 +35,7 @@ type API struct {
 	Journal          *JournalResource
 	Lookup           *LookupResource
 	Pricing          *PricingResource
+	Rcs              *RcsResource
 	Sms              *SmsResource
 	Status           *StatusResource
 	Subaccounts      *SubaccountsResource
