@@ -13,7 +13,6 @@ type SmsFile struct {
 }
 
 type SmsBaseParams struct {
-	Debug               bool      `json:"debug,omitempty"`
 	Delay               string    `json:"delay,omitempty"`
 	Files               []SmsFile `json:"files,omitempty"`
 	Flash               bool      `json:"flash,omitempty"`

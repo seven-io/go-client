@@ -9,7 +9,6 @@ import (
 )
 
 var testSmsBaseParams = SmsBaseParams{
-	Debug:               false,
 	Delay:               timestampString(),
 	Files:               nil,
 	Flash:               true,
@@ -28,12 +27,6 @@ var testSmsBaseParams = SmsBaseParams{
 
 func TestSmsResource_Json(t *testing.T) {
 	testJson(t, testSmsBaseParams, true)
-}
-
-func TestSmsResource_Json_Debug(t *testing.T) {
-	var params = testSmsBaseParams
-	params.Debug = true
-	testJson(t, params, true)
 }
 
 func TestSmsResource_Json_Files(t *testing.T) {
@@ -105,10 +98,7 @@ func testJson(t *testing.T, params SmsBaseParams, assertText bool) *SmsResponse 
 	json, err := client.Sms.Json(params)
 
 	if nil == err {
-		var debug = params.Debug
-		if testIsDummy {
-			debug = true
-		}
+		var debug = testIsDummy
 		var Debug, _ = strconv.ParseBool(json.Debug)
 
 		a.NotNil(t, json.Balance)
@@ -164,7 +154,7 @@ func testText(t *testing.T, params SmsTextParams) {
 		if params.ReturnMessageId {
 			var id, _ = strconv.ParseInt(lines[index], 10, 0)
 
-			if testIsDummy || params.Debug {
+			if testIsDummy {
 				a.Equal(t, int64(1234567890), id)
 			} else {
 				a.GreaterOrEqual(t, id, int64(1))
@@ -217,13 +207,7 @@ func testText(t *testing.T, params SmsTextParams) {
 				a.Zero(t, expensed)
 				a.Equal(t, true, debug)
 			} else {
-				if params.Debug {
-					a.Zero(t, expensed)
-				} else {
-					a.NotZero(t, expensed)
-				}
-
-				a.Equal(t, params.Debug, debug)
+				a.NotZero(t, expensed)
 			}
 		}
 	} else {

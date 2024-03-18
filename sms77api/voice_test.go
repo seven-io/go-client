@@ -40,7 +40,7 @@ func testVoiceText(p VoiceParams, t *testing.T) {
 }
 
 func testVoiceAssert(p VoiceParams, v Voice, t *testing.T) {
-	if testIsDummy || p.Debug {
+	if testIsDummy {
 		var x = Voice{Code: 100, Cost: 0, Id: 123456789}
 
 		a.Equal(t, x.Code, v.Code)
