@@ -35,6 +35,7 @@ type API struct {
 	Journal          *JournalResource
 	Lookup           *LookupResource
 	Pricing          *PricingResource
+	Rcs              *RcsResource
 	Sms              *SmsResource
 	Status           *StatusResource
 	Subaccounts      *SubaccountsResource
@@ -103,6 +104,7 @@ func New(options Options) *API {
 	c.Journal = (*JournalResource)(&c.base)
 	c.Lookup = (*LookupResource)(&c.base)
 	c.Pricing = (*PricingResource)(&c.base)
+	c.Rcs = (*RcsResource)(&c.base)
 	c.Sms = (*SmsResource)(&c.base)
 	c.Status = (*StatusResource)(&c.base)
 	c.Subaccounts = (*SubaccountsResource)(&c.base)
@@ -121,6 +123,7 @@ func (api *API) post(ctx context.Context, endpoint string, data map[string]inter
 }
 
 func (api *API) request(ctx context.Context, endpoint string, method string, data interface{}) (string, error) {
+	fmt.Println("request")
 	createRequestPayload := func() string {
 		params := url.Values{}
 
@@ -194,7 +197,7 @@ func (api *API) request(ctx context.Context, endpoint string, method string, dat
 		return
 	}
 
-	if http.MethodGet != method && http.MethodPost != method {
+	if http.MethodGet != method && http.MethodPost != method && http.MethodDelete != method {
 		return "", errors.New(fmt.Sprintf("unsupported http method %s", method))
 	}
 
