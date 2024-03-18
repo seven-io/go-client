@@ -1,4 +1,4 @@
-package sms77api
+package seven
 
 import (
 	a "github.com/stretchr/testify/assert"
@@ -6,6 +6,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	a.IsType(t, client, &Sms77API{})
+	a.IsType(t, client, &API{})
 	a.Exactly(t, testOptions, client.Options)
 }

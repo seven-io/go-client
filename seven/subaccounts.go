@@ -1,4 +1,4 @@
-package sms77api
+package seven
 
 import (
 	"context"

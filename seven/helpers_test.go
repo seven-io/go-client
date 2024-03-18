@@ -1,4 +1,4 @@
-package sms77api
+package seven
 
 import (
 	b64 "encoding/base64"
@@ -25,7 +25,7 @@ func AssertKeylessCall(t *testing.T, res interface{}, err error) {
 	a.Nil(t, res)
 }
 
-func GetClient() (*Sms77API, bool) {
+func GetClient() (*API, bool) {
 	var dummy = true
 	var apiKey = os.Getenv("SEVEN_API_KEY_SANDBOX")
 

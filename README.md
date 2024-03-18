@@ -7,7 +7,7 @@
 
 Requires Go 1.13+.
 
-```go get github.com/seven-io/go-client/sms77api```
+```go get github.com/seven-io/go-client/seven```
 
 ### Usage
 
@@ -16,12 +16,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/seven-io/go-client/sms77api"
+	"github.com/seven-io/go-client/seven"
 )
 
 func main() {
-	var client = sms77api.New(sms77api.Options{
-		ApiKey: "InsertSuperSecretSms77ApiKey!",
+	var client = seven.New(seven.Options{
+		ApiKey: "InsertSuperSecretSevenApiKey!",
 	})
 	var balance, err = client.Balance.Get()
 	if err == nil {
