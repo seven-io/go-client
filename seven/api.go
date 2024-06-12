@@ -164,6 +164,7 @@ func (api *API) request(ctx context.Context, endpoint string, method string, dat
 		var uri = fmt.Sprintf("https://gateway.seven.io/api/%s", endpoint)
 		var qs = createRequestPayload()
 		var headers = map[string]string{
+			"Accept":        "application/json",
 			"Authorization": fmt.Sprintf("Basic %s", api.ApiKey),
 			sentWithKey:     api.SentWith,
 		}
