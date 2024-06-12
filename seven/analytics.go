@@ -6,45 +6,107 @@ import (
 )
 
 type AnalyticsParams struct {
-	End         string           `json:"end,omitempty"`
-	GroupBy     AnalyticsGroupBy `json:"group_by,omitempty"`
-	Label       string           `json:"label,omitempty"`
-	Start       string           `json:"start,omitempty"`
-	Subaccounts string           `json:"subaccounts,omitempty"`
+	End         string `json:"end,omitempty"`
+	Label       string `json:"label,omitempty"`
+	Start       string `json:"start,omitempty"`
+	Subaccounts string `json:"subaccounts,omitempty"`
 }
 
 type Analytics struct {
-	Account *string `json:"account"`
-	Country *string `json:"country"`
-	Date    *string `json:"date"`
-	Label   *string `json:"label"`
-
-	Direct   int     `json:"direct"`
-	Economy  int     `json:"economy"`
 	Hlr      int     `json:"hlr"`
 	Inbound  int     `json:"inbound"`
 	Mnp      int     `json:"mnp"`
+	Rcs      int     `json:"rcs"`
+	Sms      int     `json:"sms"`
 	Voice    int     `json:"voice"`
 	UsageEur float64 `json:"usage_eur"`
 }
 
-type AnalyticsResource resource
-
-type AnalyticsGroupBy string
-
-const (
-	AnalyticsGroupByCountry    AnalyticsGroupBy = "country"
-	AnalyticsGroupByDate       AnalyticsGroupBy = "date"
-	AnalyticsGroupByLabel      AnalyticsGroupBy = "label"
-	AnalyticsGroupBySubaccount AnalyticsGroupBy = "subaccount"
-)
-
-func (api *AnalyticsResource) Get(p *AnalyticsParams) (o []Analytics, err error) {
-	return api.GetContext(context.Background(), p)
+type AnalyticsByDate struct {
+	Analytics
+	Date *string `json:"date"`
 }
 
-func (api *AnalyticsResource) GetContext(ctx context.Context, p *AnalyticsParams) (o []Analytics, err error) {
-	res, err := api.client.request(ctx, "analytics", "GET", p)
+type AnalyticsByLabel struct {
+	Analytics
+	Label string `json:"label"`
+}
+
+type AnalyticsBySubaccount struct {
+	Analytics
+	Account string `json:"account"`
+}
+
+type AnalyticsByCountry struct {
+	Analytics
+	Country string `json:"country"`
+}
+
+type AnalyticsResource resource
+
+func (api *AnalyticsResource) ByCountry(p *AnalyticsParams) (o []AnalyticsByCountry, err error) {
+	return api.ByCountryContext(context.Background(), p)
+}
+
+func (api *AnalyticsResource) ByCountryContext(ctx context.Context, p *AnalyticsParams) (o []AnalyticsByCountry, err error) {
+	res, err := api.client.request(ctx, "analytics/country", "GET", p)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(res), &o)
+
+	if nil != err {
+		return nil, err
+	}
+
+	return o, nil
+}
+
+func (api *AnalyticsResource) ByDate(p *AnalyticsParams) (o []AnalyticsByDate, err error) {
+	return api.ByDateContext(context.Background(), p)
+}
+
+func (api *AnalyticsResource) ByDateContext(ctx context.Context, p *AnalyticsParams) (o []AnalyticsByDate, err error) {
+	res, err := api.client.request(ctx, "analytics/date", "GET", p)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(res), &o)
+
+	if nil != err {
+		return nil, err
+	}
+
+	return o, nil
+}
+
+func (api *AnalyticsResource) ByLabel(p *AnalyticsParams) (o []AnalyticsByLabel, err error) {
+	return api.ByLabelContext(context.Background(), p)
+}
+
+func (api *AnalyticsResource) ByLabelContext(ctx context.Context, p *AnalyticsParams) (o []AnalyticsByLabel, err error) {
+	res, err := api.client.request(ctx, "analytics/label", "GET", p)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(res), &o)
+
+	if nil != err {
+		return nil, err
+	}
+
+	return o, nil
+}
+
+func (api *AnalyticsResource) BySubaccount(p *AnalyticsParams) (o []AnalyticsBySubaccount, err error) {
+	return api.BySubaccountContext(context.Background(), p)
+}
+
+func (api *AnalyticsResource) BySubaccountContext(ctx context.Context, p *AnalyticsParams) (o []AnalyticsBySubaccount, err error) {
+	res, err := api.client.request(ctx, "analytics/subaccount", "GET", p)
 	if err != nil {
 		return nil, err
 	}
