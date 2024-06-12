@@ -48,8 +48,10 @@ const (
 
 	sentWithKey = "sentWith"
 
-	HttpMethodGet  HttpMethod = "GET"
-	HttpMethodPost HttpMethod = "POST"
+	HttpMethodDelete HttpMethod = "DELETE"
+	HttpMethodGet    HttpMethod = "GET"
+	HttpMethodPatch  HttpMethod = "PATCH"
+	HttpMethodPost   HttpMethod = "POST"
 
 	StatusCodeErrorCarrierNotAvailable    StatusCode = "11"
 	StatusCodeSuccess                     StatusCode = "100"
@@ -114,16 +116,7 @@ func New(options Options) *API {
 	return c
 }
 
-func (api *API) get(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
-	return api.request(ctx, endpoint, http.MethodGet, data)
-}
-
-func (api *API) post(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
-	return api.request(ctx, endpoint, http.MethodPost, data)
-}
-
 func (api *API) request(ctx context.Context, endpoint string, method string, data interface{}) (string, error) {
-	fmt.Println("request")
 	createRequestPayload := func() string {
 		params := url.Values{}
 

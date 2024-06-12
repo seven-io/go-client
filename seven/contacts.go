@@ -3,138 +3,134 @@ package seven
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 )
 
 type ContactsResource resource
 
-type ContactsWriteCode string
+type ContactsList struct {
+	Data           []Contact      `json:"data"`
+	PagingMetadata PagingMetadata `json:"pagingMetadata"`
+}
 
-const (
-	ContactsWriteCodeUnchanged ContactsWriteCode = "151"
-	ContactsWriteCodeChanged   ContactsWriteCode = "152"
-)
-
-type ContactsAction string
-
-const (
-	ContactsActionDelete ContactsAction = "del"
-	ContactsActionRead   ContactsAction = "read"
-	ContactsActionWrite  ContactsAction = "write"
-)
+type PagingMetadata struct {
+	Count   uint `json:"count"`
+	HasMore bool `json:"has_more"`
+	Limit   uint `json:"limit"`
+	Offset  uint `json:"offset"`
+	Total   uint `json:"total"`
+}
 
 type Contact struct {
-	Id    string `json:"ID"`
-	Nick  string `json:"Name"`
-	Phone string `json:"Number"`
+	Avatar     string            `json:"avatar"`
+	Created    string            `json:"created"`
+	Groups     []uint            `json:"groups"`
+	ID         uint              `json:"id"`
+	Initials   ContactInitials   `json:"initials"`
+	Properties ContactProperties `json:"properties"`
+	Validation ContactValidation `json:"validation"`
 }
 
-type ContactEditParams struct {
-	Id    string `json:"id"`
-	Nick  string `json:"nick,omitempty"`
-	Phone string `json:"empfaenger,omitempty"`
+type ContactValidation struct {
+	State     *string `json:"state"`
+	Timestamp *string `json:"timestamp"`
 }
 
-type ContactsCreateJsonResponse struct {
-	contactsPropReturn
-	Id uint64 `json:"id"`
+type ContactInitials struct {
+	Color    string `json:"color"`
+	Initials string `json:"initials"`
 }
 
-type ContactsDeleteParams = contactsParamId
-
-type ContactsDeleteJsonResponse = contactsPropReturn
-
-type ContactsEditJsonResponse = contactsPropReturn
-
-type ContactsReadParams = contactsParamId
-
-type contactsParamAction struct {
-	Action ContactsAction `json:"action"`
+type ContactProperties struct {
+	Address      *string `json:"address"`
+	Birthday     *string `json:"birthday"`
+	City         *string `json:"city"`
+	Email        *string `json:"email"`
+	Firstname    *string `json:"firstname"`
+	Fullname     *string `json:"fullname"`
+	HomeNumber   *string `json:"home_number"`
+	Lastname     *string `json:"lastname"`
+	MobileNumber *string `json:"mobile_number"`
+	Notes        *string `json:"notes"`
+	PostalCode   *string `json:"postal_code"`
 }
 
-type contactsParamId struct {
-	Id uint64 `json:"id,omitempty"`
+type ContactCreateParams struct {
+	Avatar string `json:"avatar,omitempty"`
+	Groups []uint `json:"groups,omitempty"`
+
+	Address      *string `json:"address,omitempty"`
+	Birthday     *string `json:"birthday,omitempty"`
+	City         *string `json:"city,omitempty"`
+	Email        *string `json:"email,omitempty"`
+	Firstname    *string `json:"firstname,omitempty"`
+	HomeNumber   *string `json:"home_number,omitempty"`
+	Lastname     *string `json:"lastname,omitempty"`
+	MobileNumber *string `json:"mobile_number,omitempty"`
+	Notes        *string `json:"notes,omitempty"`
+	PostalCode   *string `json:"postal_code,omitempty"`
 }
 
-type contactsParamJson struct {
-	Json bool `json:"json,omitempty"`
+type ContactUpdateParams struct {
+	Avatar string `json:"avatar,omitempty"`
+	Groups []uint `json:"groups,omitempty"`
+	//ID     uint   `json:"id"`
+
+	Address      *string `json:"address,omitempty"`
+	Birthday     *string `json:"birthday,omitempty"`
+	City         *string `json:"city,omitempty"`
+	Email        *string `json:"email,omitempty"`
+	Firstname    *string `json:"firstname,omitempty"`
+	HomeNumber   *string `json:"home_number,omitempty"`
+	Lastname     *string `json:"lastname,omitempty"`
+	MobileNumber *string `json:"mobile_number,omitempty"`
+	Notes        *string `json:"notes,omitempty"`
+	PostalCode   *string `json:"postal_code,omitempty"`
 }
 
-type contactsPropReturn struct {
-	Return ContactsWriteCode `json:"return"`
+type ContactsDeleteParams = struct {
+	ID uint `json:"id"`
 }
 
-type contactsReadApiParams struct {
-	contactsParamAction
-	ContactsReadParams
-	contactsParamJson
+type ContactsDeleteResponse = struct {
+	Success bool `json:"success"`
 }
 
-func newReadApiParams(readParams ContactsReadParams, json bool) contactsReadApiParams {
-	return contactsReadApiParams{
-		contactsParamAction: contactsParamAction{ContactsActionRead},
-		contactsParamJson:   contactsParamJson{json},
-		ContactsReadParams:  readParams,
+type ContactsGetParams = struct {
+	ID uint `json:"id"`
+}
+
+type ContactsListParams = struct {
+	GroupId        *uint   `json:"group_id,omitempty"`
+	Limit          *uint   `json:"limit,omitempty"`
+	Offset         *uint   `json:"offset,omitempty"`
+	OrderBy        *string `json:"order_by,omitempty"`
+	OrderDirection *string `json:"order_direction,omitempty"`
+	Search         *string `json:"search,omitempty"`
+}
+
+func (api *ContactsResource) Get(p ContactsGetParams) (c Contact, e error) {
+	return api.GetContext(context.Background(), p)
+}
+
+func (api *ContactsResource) GetContext(ctx context.Context, p ContactsGetParams) (c Contact, e error) {
+	s, e := api.client.request(ctx, fmt.Sprintf("contacts/%d", p.ID), string(HttpMethodGet), nil)
+
+	if nil != e {
+		return
 	}
+
+	json.Unmarshal([]byte(s), &c)
+
+	return
 }
 
-type contactsCreateApiParams struct {
-	contactsParamAction
-	contactsParamJson
+func (api *ContactsResource) List(p ContactsListParams) (a ContactsList, e error) {
+	return api.ListContext(context.Background(), p)
 }
 
-func newContactsCreateApiParams(json bool) contactsCreateApiParams {
-	return contactsCreateApiParams{
-		contactsParamAction: contactsParamAction{ContactsActionWrite},
-		contactsParamJson:   contactsParamJson{json},
-	}
-}
-
-type contactsDeleteApiParams struct {
-	ContactsDeleteParams
-	contactsParamAction
-	contactsParamJson
-}
-
-func newContactsDeleteApiParams(p ContactsDeleteParams, json bool) contactsDeleteApiParams {
-	return contactsDeleteApiParams{
-		ContactsDeleteParams: p,
-		contactsParamAction:  contactsParamAction{ContactsActionDelete},
-		contactsParamJson:    contactsParamJson{json},
-	}
-}
-
-type contactsEditJsonApiParams struct {
-	ContactEditParams
-	contactsParamAction
-	contactsParamJson
-}
-
-func newContactsEditJsonApiParams(p ContactEditParams, json bool) contactsEditJsonApiParams {
-	return contactsEditJsonApiParams{
-		ContactEditParams:   p,
-		contactsParamAction: contactsParamAction{ContactsActionWrite},
-		contactsParamJson:   contactsParamJson{json},
-	}
-}
-
-func (api *ContactsResource) request(ctx context.Context, method HttpMethod, params interface{}) (string, error) {
-	return api.client.request(ctx, "contacts", string(method), params)
-}
-
-func (api *ContactsResource) ReadCsv(p ContactsReadParams) (string, error) {
-	return api.ReadCsvContext(context.Background(), p)
-}
-
-func (api *ContactsResource) ReadCsvContext(ctx context.Context, p ContactsReadParams) (string, error) {
-	return api.request(ctx, HttpMethodGet, newReadApiParams(p, false))
-}
-
-func (api *ContactsResource) ReadJson(p ContactsReadParams) (a []Contact, e error) {
-	return api.ReadJsonContext(context.Background(), p)
-}
-
-func (api *ContactsResource) ReadJsonContext(ctx context.Context, p ContactsReadParams) (a []Contact, e error) {
-	s, e := api.request(ctx, HttpMethodGet, newReadApiParams(p, true))
+func (api *ContactsResource) ListContext(ctx context.Context, p ContactsListParams) (a ContactsList, e error) {
+	s, e := api.client.request(ctx, "contacts", string(HttpMethodGet), p)
 
 	if nil != e {
 		return
@@ -145,62 +141,38 @@ func (api *ContactsResource) ReadJsonContext(ctx context.Context, p ContactsRead
 	return
 }
 
-func (api *ContactsResource) CreateCsv() (string, error) {
-	return api.CreateCsvContext(context.Background())
+func (api *ContactsResource) Create(p ContactCreateParams) (c Contact, e error) {
+	return api.CreateContext(context.Background(), p)
 }
 
-func (api *ContactsResource) CreateCsvContext(ctx context.Context) (string, error) {
-	return api.request(ctx, HttpMethodPost, newContactsCreateApiParams(false))
+func (api *ContactsResource) CreateContext(ctx context.Context, p ContactCreateParams) (c Contact, e error) {
+	s, e := api.client.request(ctx, "contacts", string(HttpMethodPost), p)
+
+	e = json.Unmarshal([]byte(s), &c)
+
+	return
 }
 
-func (api *ContactsResource) CreateJson() (o ContactsCreateJsonResponse, e error) {
-	return api.CreateJsonContext(context.Background())
+func (api *ContactsResource) Delete(p ContactsDeleteParams) (o ContactsDeleteResponse, e error) {
+	return api.DeleteContext(context.Background(), p)
 }
 
-func (api *ContactsResource) CreateJsonContext(ctx context.Context) (o ContactsCreateJsonResponse, e error) {
-	s, e := api.request(ctx, HttpMethodGet, newContactsCreateApiParams(true))
+func (api *ContactsResource) DeleteContext(ctx context.Context, p ContactsDeleteParams) (o ContactsDeleteResponse, e error) {
+	s, e := api.client.request(ctx, fmt.Sprintf("contacts/%d", p.ID), string(HttpMethodDelete), p)
 
 	e = json.Unmarshal([]byte(s), &o)
 
 	return
 }
 
-func (api *ContactsResource) DeleteCsv(p ContactsDeleteParams) (string, error) {
-	return api.DeleteCsvContext(context.Background(), p)
+func (api *ContactsResource) Update(id uint, p ContactUpdateParams) (c Contact, e error) {
+	return api.UpdateContext(context.Background(), id, p)
 }
 
-func (api *ContactsResource) DeleteCsvContext(ctx context.Context, p ContactsDeleteParams) (string, error) {
-	return api.request(ctx, HttpMethodPost, newContactsDeleteApiParams(p, false))
-}
+func (api *ContactsResource) UpdateContext(ctx context.Context, id uint, p ContactUpdateParams) (c Contact, e error) {
+	s, e := api.client.request(ctx, fmt.Sprintf("contacts/%d", id), string(HttpMethodPatch), p)
 
-func (api *ContactsResource) DeleteJson(p ContactsDeleteParams) (o ContactsDeleteJsonResponse, e error) {
-	return api.DeleteJsonContext(context.Background(), p)
-}
-
-func (api *ContactsResource) DeleteJsonContext(ctx context.Context, p ContactsDeleteParams) (o ContactsDeleteJsonResponse, e error) {
-	s, e := api.request(ctx, HttpMethodGet, newContactsDeleteApiParams(p, true))
-
-	e = json.Unmarshal([]byte(s), &o)
-
-	return
-}
-
-func (api *ContactsResource) EditCsv(p ContactEditParams) (string, error) {
-	return api.EditCsvContext(context.Background(), p)
-}
-
-func (api *ContactsResource) EditCsvContext(ctx context.Context, p ContactEditParams) (string, error) {
-	return api.request(ctx, HttpMethodGet, newContactsEditJsonApiParams(p, false))
-}
-
-func (api *ContactsResource) EditJson(p ContactEditParams) (o ContactsEditJsonResponse, e error) {
-	return api.EditJsonContext(context.Background(), p)
-}
-
-func (api *ContactsResource) EditJsonContext(ctx context.Context, p ContactEditParams) (o ContactsEditJsonResponse, e error) {
-	s, e := api.request(ctx, HttpMethodGet, newContactsEditJsonApiParams(p, true))
-
-	e = json.Unmarshal([]byte(s), &o)
+	e = json.Unmarshal([]byte(s), &c)
 
 	return
 }
