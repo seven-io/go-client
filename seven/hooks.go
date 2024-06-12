@@ -3,6 +3,7 @@ package seven
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 )
 
 type HookEventType string
@@ -13,7 +14,7 @@ const (
 	HookEventTypeInboundSms  HookEventType = "sms_mo"
 	HookEventTypeTracking    HookEventType = "tracking"
 	HookEventTypeAll         HookEventType = "all"
-	HookEventTypeVoiceCall   HookEventType = "voice_call"
+	HookEventTypeRcs         HookEventType = "rcs"
 )
 
 type HookRequestMethod string
@@ -22,14 +23,6 @@ const (
 	HookRequestMethodGet  HookRequestMethod = "GET"
 	HookRequestMethodJson HookRequestMethod = "JSON"
 	HookRequestMethodPost HookRequestMethod = "POST"
-)
-
-type HooksAction string
-
-const (
-	HooksActionRead        HooksAction = "read"
-	HooksActionSubscribe   HooksAction = "subscribe"
-	HooksActionUnsubscribe HooksAction = "unsubscribe"
 )
 
 type Hook struct {
@@ -42,18 +35,16 @@ type Hook struct {
 	TargetUrl     string            `json:"target_url"`
 }
 
-type HooksParams struct {
-	Action        HooksAction       `json:"action"`
-	EventFilter   *string           `json:"event_filter,omitempty"`
-	EventType     HookEventType     `json:"event_type,omitempty"`
-	Id            int               `json:"id,omitempty"`
+type HooksSubscribeParams struct {
+	EventFilter   string            `json:"event_filter,omitempty"`
+	EventType     HookEventType     `json:"event_type"`
 	RequestMethod HookRequestMethod `json:"request_method,omitempty"`
-	TargetUrl     string            `json:"target_url,omitempty"`
+	TargetUrl     string            `json:"target_url"`
 }
 
-type HooksReadResponse struct {
-	Success bool   `json:"success"`
+type HooksListResponse struct {
 	Hooks   []Hook `json:"hooks"`
+	Success bool   `json:"success"`
 }
 
 type HooksUnsubscribeResponse struct {
@@ -61,42 +52,62 @@ type HooksUnsubscribeResponse struct {
 }
 
 type HooksSubscribeResponse struct {
-	Id      int  `json:"id"`
+	Id      uint `json:"id"`
 	Success bool `json:"success"`
 }
 
 type HooksResource resource
 
-func (api *HooksResource) Request(p HooksParams) (interface{}, error) {
-	return api.RequestContext(context.Background(), p)
+func (api *HooksResource) Subscribe(p HooksSubscribeParams) (r *HooksSubscribeResponse, e error) {
+	return api.SubscribeContext(context.Background(), p)
 }
 
-func (api *HooksResource) RequestContext(ctx context.Context, p HooksParams) (interface{}, error) {
-	method := "POST"
-	if p.Action == HooksActionRead {
-		method = "GET"
+func (api *HooksResource) SubscribeContext(ctx context.Context, p HooksSubscribeParams) (r *HooksSubscribeResponse, e error) {
+	res, e := api.client.request(ctx, "hooks", string(HttpMethodPost), p)
+
+	if e != nil {
+		return nil, e
 	}
 
-	res, err := api.client.request(ctx, "hooks", method, p)
-
-	if err != nil {
-		return nil, err
+	if e := json.Unmarshal([]byte(res), &r); e != nil {
+		return nil, e
 	}
 
-	var js interface{}
+	return
+}
 
-	switch p.Action {
-	case HooksActionRead:
-		js = &HooksReadResponse{}
-	case HooksActionSubscribe:
-		js = &HooksSubscribeResponse{}
-	case HooksActionUnsubscribe:
-		js = &HooksUnsubscribeResponse{}
+func (api *HooksResource) Unsubscribe(id uint) (r *HooksUnsubscribeResponse, e error) {
+	return api.UnsubscribeContext(context.Background(), id)
+}
+
+func (api *HooksResource) UnsubscribeContext(ctx context.Context, id uint) (r *HooksUnsubscribeResponse, e error) {
+	res, e := api.client.request(ctx, fmt.Sprintf("hooks?id=%d", id), string(HttpMethodDelete), nil)
+
+	if e != nil {
+		return nil, e
 	}
 
-	if err := json.Unmarshal([]byte(res), js); err != nil {
-		return nil, err
+	if e := json.Unmarshal([]byte(res), &r); e != nil {
+		return nil, e
 	}
 
-	return js, nil
+	return
+}
+
+func (api *HooksResource) List() (r *HooksListResponse, e error) {
+	return api.ListContext(context.Background())
+}
+
+func (api *HooksResource) ListContext(ctx context.Context) (r *HooksListResponse, e error) {
+	res, e := api.client.request(ctx, "hooks", string(HttpMethodGet), nil)
+
+	if e != nil {
+		return nil, e
+	}
+
+	if e := json.Unmarshal([]byte(res), &r); e != nil {
+		return nil, e
+	}
+
+	return
 }
