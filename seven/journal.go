@@ -50,6 +50,8 @@ type JournalParams struct {
 	Id       int    `json:"id,omitempty"`
 	State    string `json:"state,omitempty"`
 	To       string `json:"to,omitempty"`
+	Limit    int    `json:"limit,omitempty"`
+	Offset   int    `json:"offset,omitempty"`
 }
 
 func (api *JournalResource) Inbound(p *JournalParams) ([]JournalInbound, error) {
