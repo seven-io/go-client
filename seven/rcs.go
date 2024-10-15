@@ -6,15 +6,23 @@ import (
 	"strconv"
 )
 
+type RcsFallback string
+
+const (
+	RcsFallbackSms     RcsFallback = "sms"
+	RcsFallbackWebview RcsFallback = "webview"
+)
+
 type RcsParams struct {
-	Delay               string `json:"delay,omitempty"`
-	ForeignId           string `json:"foreign_id,omitempty"`
-	From                string `json:"from,omitempty"`
-	Label               string `json:"label,omitempty"`
-	PerformanceTracking bool   `json:"performance_tracking,omitempty"`
-	Text                string `json:"text"`
-	To                  string `json:"to"`
-	TTL                 int64  `json:"ttl,omitempty"`
+	Delay               string      `json:"delay,omitempty"`
+	ForeignId           string      `json:"foreign_id,omitempty"`
+	From                string      `json:"from,omitempty"`
+	Label               string      `json:"label,omitempty"`
+	PerformanceTracking bool        `json:"performance_tracking,omitempty"`
+	Text                string      `json:"text"`
+	To                  string      `json:"to"`
+	TTL                 int64       `json:"ttl,omitempty"`
+	RcsFallback         RcsFallback `json:"fallback,omitempty"`
 }
 
 type RcsResource resource
