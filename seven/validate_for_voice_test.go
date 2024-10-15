@@ -20,7 +20,7 @@ func validateForVoice(res *ValidateForVoiceResponse, err error, t *testing.T) {
 }
 
 func TestValidateForVoiceResource_Get(t *testing.T) {
-	r, e := client.ValidateForVoice.Get(ValidateForVoiceParams{Number: VinTelekom, Callback: ""})
+	r, e := client.ValidateForVoice.Get(ValidateForVoiceParams{Number: "491716992343", Callback: ""})
 
 	validateForVoice(r, e, t)
 }

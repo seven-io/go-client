@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-const VinTelekom = "4915126716517"
-const VinEplus = "491771783130"
-
 var client, testIsDummy = GetClient()
 var testBadClient = New(Options{})
 var testOptions = Options{

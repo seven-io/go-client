@@ -31,6 +31,7 @@ type API struct {
 	Analytics        *AnalyticsResource
 	Balance          *BalanceResource
 	Contacts         *ContactsResource
+	Groups           *GroupsResource
 	Hooks            *HooksResource
 	Journal          *JournalResource
 	Lookup           *LookupResource
@@ -102,6 +103,7 @@ func New(options Options) *API {
 	c.Analytics = (*AnalyticsResource)(&c.base)
 	c.Balance = (*BalanceResource)(&c.base)
 	c.Contacts = (*ContactsResource)(&c.base)
+	c.Groups = (*GroupsResource)(&c.base)
 	c.Hooks = (*HooksResource)(&c.base)
 	c.Journal = (*JournalResource)(&c.base)
 	c.Lookup = (*LookupResource)(&c.base)
@@ -191,7 +193,7 @@ func (api *API) request(ctx context.Context, endpoint string, method string, dat
 		return
 	}
 
-	if http.MethodGet != method && http.MethodPost != method && http.MethodDelete != method {
+	if http.MethodGet != method && http.MethodPost != method && http.MethodDelete != method && http.MethodPatch != method {
 		return "", errors.New(fmt.Sprintf("unsupported http method %s", method))
 	}
 

@@ -12,9 +12,9 @@ func testVoiceBuildParams(p VoiceParams) VoiceParams {
 		text = `<Response><Play digits="1wwwwww4"></Play><Say>Hello Sir!</Say></Response>`
 	}
 
-	p.From = VinEplus
+	p.From = "491771783130"
 	p.Text = text
-	p.To = VinTelekom
+	p.To = "491716992343"
 
 	return p
 }

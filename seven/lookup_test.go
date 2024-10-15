@@ -8,7 +8,7 @@ import (
 func lookup(typ string, json bool, t *testing.T) interface{} {
 	res, err := client.Lookup.Post(LookupParams{
 		Json:   json,
-		Number: VinTelekom,
+		Number: "491716992343",
 		Type:   typ,
 	})
 

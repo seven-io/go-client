@@ -18,7 +18,7 @@ var testSmsBaseParams = SmsBaseParams{
 	NoReload:            false,
 	PerformanceTracking: true,
 	Text:                "Hey friend",
-	To:                  VinTelekom,
+	To:                  "491716992343",
 	Ttl:                 320000,
 	Udh:                 "GoTestUserDataHeader",
 	Unicode:             false,
