@@ -78,11 +78,11 @@ type Mnp struct {
 
 type LookupResource resource
 
-func (api *LookupResource) Post(p LookupParams) (interface{}, error) {
-	return api.PostContext(context.Background(), p)
+func (api *LookupResource) Get(p LookupParams) (interface{}, error) {
+	return api.GetContext(context.Background(), p)
 }
 
-func (api *LookupResource) PostContext(ctx context.Context, p LookupParams) (interface{}, error) {
+func (api *LookupResource) GetContext(ctx context.Context, p LookupParams) (interface{}, error) {
 	res, err := api.client.request(ctx, "lookup", "GET", p)
 
 	if err != nil {

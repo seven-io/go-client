@@ -6,7 +6,7 @@ import (
 )
 
 func lookup(typ string, json bool, t *testing.T) interface{} {
-	res, err := client.Lookup.Post(LookupParams{
+	res, err := client.Lookup.Get(LookupParams{
 		Json:   json,
 		Number: "491716992343",
 		Type:   typ,
