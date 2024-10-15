@@ -13,6 +13,19 @@ const (
 	RcsFallbackWebview RcsFallback = "webview"
 )
 
+type RcsEvent string
+
+const (
+	RcsEventIsTyping RcsEvent = "IS_TYPING"
+	RcsEventRead     RcsEvent = "READ"
+)
+
+type RcsEventParams struct {
+	To        string   `json:"to,omitempty"`
+	MessageId string   `json:"msg_id,omitempty"`
+	Event     RcsEvent `json:"event"`
+}
+
 type RcsParams struct {
 	Delay               string      `json:"delay,omitempty"`
 	ForeignId           string      `json:"foreign_id,omitempty"`
@@ -52,6 +65,10 @@ type RcsMessage struct {
 	Text      string    `json:"text"`
 }
 
+type RcsEventResponse struct {
+	Success bool `json:"success"`
+}
+
 type RcsDeletionResponse struct {
 	Success bool `json:"success"`
 }
@@ -78,6 +95,22 @@ func (api *RcsResource) Delete(id uint) (o *RcsDeletionResponse, err error) {
 
 func (api *RcsResource) DeleteContext(ctx context.Context, id uint) (o *RcsDeletionResponse, err error) {
 	res, err := api.client.request(ctx, "rcs/messages/"+strconv.Itoa(int(id)), "DELETE", nil)
+
+	if nil != err {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(res), &o)
+
+	return
+}
+
+func (api *RcsResource) Event(params RcsEventParams) (o *RcsEventResponse, err error) {
+	return api.EventContext(context.Background(), params)
+}
+
+func (api *RcsResource) EventContext(ctx context.Context, params RcsEventParams) (o *RcsEventResponse, err error) {
+	res, err := api.client.request(ctx, "rcs/events", string(HttpMethodPost), params)
 
 	if nil != err {
 		return nil, err

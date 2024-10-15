@@ -7,6 +7,16 @@ import (
 	"testing"
 )
 
+func TestRcsResource_Event(t *testing.T) {
+	params := RcsEventParams{
+		Event: RcsEventIsTyping,
+		To:    "+491716992343",
+	}
+	json, err := client.Rcs.Event(params)
+	a.Nil(t, err)
+	a.True(t, json.Success)
+}
+
 func TestRcsResource_Text(t *testing.T) {
 	params := RcsParams{
 		Delay:               "2050-12-12 00:00:00",
