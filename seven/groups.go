@@ -20,8 +20,9 @@ type Group struct {
 	ID           uint   `json:"id"`
 }
 
-type GroupCreateParams struct {
-	Name string `json:"name"`
+type GroupOrderParams struct {
+	Number          string          `json:"number"`
+	PaymentInterval PaymentInterval `json:"payment_interval"`
 }
 
 type GroupUpdateParams struct {
@@ -78,11 +79,11 @@ func (api *GroupsResource) ListContext(ctx context.Context, p GroupsListParams) 
 	return
 }
 
-func (api *GroupsResource) Create(p GroupCreateParams) (c Group, e error) {
+func (api *GroupsResource) Create(p GroupOrderParams) (c Group, e error) {
 	return api.CreateContext(context.Background(), p)
 }
 
-func (api *GroupsResource) CreateContext(ctx context.Context, p GroupCreateParams) (c Group, e error) {
+func (api *GroupsResource) CreateContext(ctx context.Context, p GroupOrderParams) (c Group, e error) {
 	s, e := api.client.request(ctx, "groups", string(HttpMethodPost), p)
 
 	e = json.Unmarshal([]byte(s), &c)

@@ -35,6 +35,7 @@ type API struct {
 	Hooks            *HooksResource
 	Journal          *JournalResource
 	Lookup           *LookupResource
+	Numbers          *NumbersResource
 	Pricing          *PricingResource
 	Rcs              *RcsResource
 	Sms              *SmsResource
@@ -107,6 +108,7 @@ func New(options Options) *API {
 	c.Hooks = (*HooksResource)(&c.base)
 	c.Journal = (*JournalResource)(&c.base)
 	c.Lookup = (*LookupResource)(&c.base)
+	c.Numbers = (*NumbersResource)(&c.base)
 	c.Pricing = (*PricingResource)(&c.base)
 	c.Rcs = (*RcsResource)(&c.base)
 	c.Sms = (*SmsResource)(&c.base)
