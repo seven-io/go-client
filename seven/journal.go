@@ -7,15 +7,6 @@ import (
 
 type JournalResource resource
 
-type JournalType string
-
-const (
-	JournalTypeInbound  JournalType = "inbound"
-	JournalTypeOutbound JournalType = "outbound"
-	JournalTypeReplies  JournalType = "replies"
-	JournalTypeVoice    JournalType = "voice"
-)
-
 type JournalBase struct {
 	From      string `json:"from"`
 	Id        string `json:"id"`
@@ -54,18 +45,11 @@ type JournalVoice struct {
 }
 
 type JournalParams struct {
-	DateFrom string      `json:"date_from,omitempty"`
-	DateTo   string      `json:"date_to,omitempty"`
-	Id       int         `json:"id,omitempty"`
-	State    string      `json:"state,omitempty"`
-	To       string      `json:"to,omitempty"`
-	Type     JournalType `json:"type"`
-}
-
-func BuildJournalParams(journalType JournalType, p *JournalParams) *JournalParams {
-	p.Type = journalType
-
-	return p
+	DateFrom string `json:"date_from,omitempty"`
+	DateTo   string `json:"date_to,omitempty"`
+	Id       int    `json:"id,omitempty"`
+	State    string `json:"state,omitempty"`
+	To       string `json:"to,omitempty"`
 }
 
 func (api *JournalResource) Inbound(p *JournalParams) ([]JournalInbound, error) {
@@ -73,7 +57,7 @@ func (api *JournalResource) Inbound(p *JournalParams) ([]JournalInbound, error) 
 }
 
 func (api *JournalResource) InboundContext(ctx context.Context, p *JournalParams) ([]JournalInbound, error) {
-	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeInbound, p))
+	res, err := api.client.request(ctx, "journal/inbound", "GET", p)
 
 	if err != nil {
 		return nil, err
@@ -93,7 +77,7 @@ func (api *JournalResource) Outbound(p *JournalParams) ([]JournalOutbound, error
 }
 
 func (api *JournalResource) OutboundContext(ctx context.Context, p *JournalParams) ([]JournalOutbound, error) {
-	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeOutbound, p))
+	res, err := api.client.request(ctx, "journal/outbound", "GET", p)
 
 	if err != nil {
 		return nil, err
@@ -113,7 +97,7 @@ func (api *JournalResource) Replies(p *JournalParams) ([]JournalReplies, error) 
 }
 
 func (api *JournalResource) RepliesContext(ctx context.Context, p *JournalParams) ([]JournalReplies, error) {
-	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeReplies, p))
+	res, err := api.client.request(ctx, "journal/replies", "GET", p)
 
 	if err != nil {
 		return nil, err
@@ -133,7 +117,7 @@ func (api *JournalResource) Voice(p *JournalParams) ([]JournalVoice, error) {
 }
 
 func (api *JournalResource) VoiceContext(ctx context.Context, p *JournalParams) ([]JournalVoice, error) {
-	res, err := api.client.request(ctx, "journal", "GET", BuildJournalParams(JournalTypeVoice, p))
+	res, err := api.client.request(ctx, "journal/voice", "GET", p)
 
 	if err != nil {
 		return nil, err
