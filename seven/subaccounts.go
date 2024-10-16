@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 )
 
+type ListSubaccountsParams struct {
+	ID *uint `json:"id,omitempty"`
+}
+
 type CreateSubaccountParams struct {
-	Action SubaccountsAction `json:"action"`
-	Email  string            `json:"email"`
-	Name   string            `json:"name"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
 type CreateSubaccountResponse struct {
@@ -23,16 +26,14 @@ type DeleteSubaccountResponse struct {
 }
 
 type TransferCreditsToSubaccountParams struct {
-	Action SubaccountsAction `json:"action"`
-	Amount float32           `json:"amount"`
-	Id     uint              `json:"id"`
+	Amount float32 `json:"amount"`
+	Id     uint    `json:"id"`
 }
 
 type AutoChargeSubaccountParams struct {
-	Action    SubaccountsAction `json:"action"`
-	Amount    float32           `json:"amount"`
-	Id        uint              `json:"id"`
-	Threshold float32           `json:"threshold"`
+	Amount    float32 `json:"amount"`
+	Id        uint    `json:"id"`
+	Threshold float32 `json:"threshold"`
 }
 
 type TransferCreditsToSubaccountResponse struct {
@@ -67,24 +68,12 @@ type Subaccount struct {
 
 type SubaccountsResource resource
 
-type SubaccountsAction string
-
-const (
-	SubaccountsActionAutoCharge      SubaccountsAction = "update"
-	SubaccountsActionCreate          SubaccountsAction = "create"
-	SubaccountsActionDelete          SubaccountsAction = "delete"
-	SubaccountsActionRead            SubaccountsAction = "read"
-	SubaccountsActionTransferCredits SubaccountsAction = "transfer_credits"
-)
-
 func (api *SubaccountsResource) TransferCredits(p TransferCreditsToSubaccountParams) (o TransferCreditsToSubaccountResponse, e error) {
 	return api.TransferCreditsContext(context.Background(), p)
 }
 
 func (api *SubaccountsResource) TransferCreditsContext(ctx context.Context, p TransferCreditsToSubaccountParams) (o TransferCreditsToSubaccountResponse, e error) {
-	p.Action = SubaccountsActionTransferCredits
-
-	r, e := api.client.request(ctx, "subaccounts", "POST", p)
+	r, e := api.client.request(ctx, "subaccounts/transfer_credits", "POST", p)
 
 	if nil != e {
 		return
@@ -100,9 +89,7 @@ func (api *SubaccountsResource) AutoCharge(p AutoChargeSubaccountParams) (o Auto
 }
 
 func (api *SubaccountsResource) AutoChargeContext(ctx context.Context, p AutoChargeSubaccountParams) (o AutoChargeSubaccountResponse, e error) {
-	p.Action = SubaccountsActionAutoCharge
-
-	r, e := api.client.request(ctx, "subaccounts", "POST", p)
+	r, e := api.client.request(ctx, "subaccounts/update", "POST", p)
 
 	if nil != e {
 		return
@@ -119,11 +106,10 @@ func (api *SubaccountsResource) Delete(id uint) (p DeleteSubaccountResponse, e e
 
 func (api *SubaccountsResource) DeleteContext(ctx context.Context, id uint) (o DeleteSubaccountResponse, e error) {
 	params := map[string]interface{}{
-		"action": SubaccountsActionDelete,
-		"id":     id,
+		"id": id,
 	}
 
-	r, e := api.client.request(ctx, "subaccounts", "POST", params)
+	r, e := api.client.request(ctx, "subaccounts/delete", "POST", params)
 
 	if nil != e {
 		return
@@ -139,9 +125,7 @@ func (api *SubaccountsResource) Create(p CreateSubaccountParams) (o CreateSubacc
 }
 
 func (api *SubaccountsResource) CreateContext(ctx context.Context, p CreateSubaccountParams) (o CreateSubaccountResponse, e error) {
-	p.Action = SubaccountsActionCreate
-
-	r, e := api.client.request(ctx, "subaccounts", "POST", p)
+	r, e := api.client.request(ctx, "subaccounts/create", "POST", p)
 
 	if nil != e {
 		return
@@ -152,15 +136,12 @@ func (api *SubaccountsResource) CreateContext(ctx context.Context, p CreateSubac
 	return
 }
 
-func (api *SubaccountsResource) Read() (o []Subaccount, e error) {
-	return api.ReadContext(context.Background())
+func (api *SubaccountsResource) Read(p ListSubaccountsParams) (o []Subaccount, e error) {
+	return api.ReadContext(context.Background(), p)
 }
 
-func (api *SubaccountsResource) ReadContext(ctx context.Context) (o []Subaccount, e error) {
-	params := map[string]interface{}{
-		"action": SubaccountsActionRead,
-	}
-	r, e := api.client.request(ctx, "subaccounts", "GET", params)
+func (api *SubaccountsResource) ReadContext(ctx context.Context, p ListSubaccountsParams) (o []Subaccount, e error) {
+	r, e := api.client.request(ctx, "subaccounts/read", "GET", p)
 
 	if nil != e {
 		return

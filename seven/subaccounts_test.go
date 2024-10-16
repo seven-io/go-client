@@ -124,7 +124,7 @@ func TestSubaccountsResource_Create(t *testing.T) {
 }
 
 func TestSubaccountsResource_Read(t *testing.T) {
-	res, err := client.Subaccounts.Read()
+	res, err := client.Subaccounts.Read(ListSubaccountsParams{})
 
 	if err != nil {
 		a.Nil(t, res)
