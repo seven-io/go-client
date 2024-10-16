@@ -25,9 +25,10 @@ type VoiceMessage struct {
 }
 
 type VoiceParams struct {
-	To   string `json:"to"`
-	Text string `json:"text"`
-	From string `json:"from,omitempty"`
+	To       string `json:"to"`
+	Text     string `json:"text"`
+	From     string `json:"from,omitempty"`
+	Ringtime uint8  `json:"ringtime,omitempty"`
 }
 
 type VoiceResource resource
