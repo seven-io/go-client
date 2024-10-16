@@ -78,6 +78,26 @@ type Mnp struct {
 
 type LookupResource resource
 
+func (api *LookupResource) Cnam(p LookupParams) (*LookupCnamResponse, error) {
+	return api.CnamContext(context.Background(), p)
+}
+
+func (api *LookupResource) CnamContext(ctx context.Context, p LookupParams) (*LookupCnamResponse, error) {
+	res, err := api.client.request(ctx, "lookup/cnam", "GET", p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var js LookupCnamResponse
+
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
+		return nil, err
+	}
+
+	return &js, nil
+}
+
 func (api *LookupResource) Get(p LookupParams) (interface{}, error) {
 	return api.GetContext(context.Background(), p)
 }

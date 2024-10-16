@@ -35,11 +35,21 @@ func TestLookupFormat(t *testing.T) {
 }
 
 func TestLookupCnam(t *testing.T) {
-	cnam := lookup("cnam", false, t).(*LookupCnamResponse)
-	a.NotEmpty(t, cnam.Code)
-	a.NotEmpty(t, cnam.Name)
-	a.NotEmpty(t, cnam.Number)
-	a.NotEmpty(t, cnam.Success)
+	res, err := client.Lookup.Cnam(LookupParams{
+		Number: "491716992343",
+	})
+
+	if err == nil {
+		a.NotNil(t, res)
+	}
+	if res == nil {
+		a.Nil(t, err)
+	}
+
+	a.NotEmpty(t, res.Code)
+	a.NotEmpty(t, res.Name)
+	a.NotEmpty(t, res.Number)
+	a.NotEmpty(t, res.Success)
 }
 
 func TestLookupHlr(t *testing.T) {
