@@ -63,30 +63,40 @@ func TestLookupCnam(t *testing.T) {
 }
 
 func TestLookupHlr(t *testing.T) {
-	hlr := lookup("hlr", false, t).(*LookupHlrResponse)
-	a.NotEmpty(t, hlr.CountryCode)
-	a.NotEmpty(t, hlr.CountryName)
-	a.NotEmpty(t, hlr.CountryPrefix)
-	a.NotEmpty(t, hlr.CurrentCarrier.Country)
-	a.NotEmpty(t, hlr.CurrentCarrier.Name)
-	a.NotEmpty(t, hlr.CurrentCarrier.NetworkCode)
-	a.NotEmpty(t, hlr.CurrentCarrier.NetworkType)
-	a.NotEmpty(t, hlr.InternationalFormatNumber)
-	a.NotEmpty(t, hlr.InternationalFormatted)
-	a.NotEmpty(t, hlr.LookupOutcomeMessage)
-	a.NotEmpty(t, hlr.NationalFormatNumber)
-	a.NotEmpty(t, hlr.OriginalCarrier.Country)
-	a.NotEmpty(t, hlr.OriginalCarrier.Name)
-	a.NotEmpty(t, hlr.OriginalCarrier.NetworkCode)
-	a.NotEmpty(t, hlr.OriginalCarrier.NetworkType)
-	a.NotEmpty(t, hlr.Ported)
-	a.NotEmpty(t, hlr.Reachable)
-	a.NotEmpty(t, hlr.Roaming)
-	a.NotEmpty(t, hlr.StatusMessage)
-	a.NotEmpty(t, hlr.ValidNumber)
+	res, err := client.Lookup.Hlr(LookupParams{
+		Number: "491716992343",
+	})
 
-	if nil != hlr.CountryCodeIso3 {
-		a.NotEmpty(t, *hlr.CountryCodeIso3)
+	if err == nil {
+		a.NotNil(t, res)
+	}
+	if res == nil {
+		a.Nil(t, err)
+	}
+
+	a.NotEmpty(t, res.CountryCode)
+	a.NotEmpty(t, res.CountryName)
+	a.NotEmpty(t, res.CountryPrefix)
+	a.NotEmpty(t, res.CurrentCarrier.Country)
+	a.NotEmpty(t, res.CurrentCarrier.Name)
+	a.NotEmpty(t, res.CurrentCarrier.NetworkCode)
+	a.NotEmpty(t, res.CurrentCarrier.NetworkType)
+	a.NotEmpty(t, res.InternationalFormatNumber)
+	a.NotEmpty(t, res.InternationalFormatted)
+	a.NotEmpty(t, res.LookupOutcomeMessage)
+	a.NotEmpty(t, res.NationalFormatNumber)
+	a.NotEmpty(t, res.OriginalCarrier.Country)
+	a.NotEmpty(t, res.OriginalCarrier.Name)
+	a.NotEmpty(t, res.OriginalCarrier.NetworkCode)
+	a.NotEmpty(t, res.OriginalCarrier.NetworkType)
+	a.NotEmpty(t, res.Ported)
+	a.NotEmpty(t, res.Reachable)
+	a.NotEmpty(t, res.Roaming)
+	a.NotEmpty(t, res.StatusMessage)
+	a.NotEmpty(t, res.ValidNumber)
+
+	if nil != res.CountryCodeIso3 {
+		a.NotEmpty(t, *res.CountryCodeIso3)
 	}
 }
 

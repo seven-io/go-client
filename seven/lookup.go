@@ -118,6 +118,26 @@ func (api *LookupResource) FormatContext(ctx context.Context, p LookupParams) (*
 	return &js, nil
 }
 
+func (api *LookupResource) Hlr(p LookupParams) (*LookupHlrResponse, error) {
+	return api.HlrContext(context.Background(), p)
+}
+
+func (api *LookupResource) HlrContext(ctx context.Context, p LookupParams) (*LookupHlrResponse, error) {
+	res, err := api.client.request(ctx, "lookup/hlr", "GET", p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var js LookupHlrResponse
+
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
+		return nil, err
+	}
+
+	return &js, nil
+}
+
 func (api *LookupResource) Get(p LookupParams) (interface{}, error) {
 	return api.GetContext(context.Background(), p)
 }
