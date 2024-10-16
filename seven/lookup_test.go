@@ -5,24 +5,6 @@ import (
 	"testing"
 )
 
-func lookup(typ string, json bool, t *testing.T) interface{} {
-	res, err := client.Lookup.Get(LookupParams{
-		Json:   json,
-		Number: "491716992343",
-		Type:   typ,
-	})
-
-	if err == nil {
-		a.NotNil(t, res)
-	}
-
-	if res == nil {
-		a.Nil(t, err)
-	}
-
-	return res
-}
-
 func TestLookupFormat(t *testing.T) {
 	res, err := client.Lookup.Format(LookupParams{
 		Number: "491716992343",
@@ -101,17 +83,23 @@ func TestLookupHlr(t *testing.T) {
 }
 
 func TestLookupMnp(t *testing.T) {
-	a.NotEmpty(t, lookup("mnp", false, t).(string))
-}
+	res, err := client.Lookup.Mnp(LookupParams{
+		Number: "491716992343",
+	})
 
-func TestLookupMnpJson(t *testing.T) {
-	mnp := lookup("mnp", true, t).(*LookupMnpResponse)
-	a.Greater(t, mnp.Code, int64(0))
-	a.NotEmpty(t, mnp.Mnp.Country, 0)
-	a.NotEmpty(t, mnp.Mnp.InternationalFormatted, 0)
-	a.NotEmpty(t, mnp.Mnp.Mccmnc, 0)
-	a.NotEmpty(t, mnp.Mnp.NationalFormat, 0)
-	a.NotEmpty(t, mnp.Mnp.Network, 0)
-	a.NotEmpty(t, mnp.Mnp.Number, 0)
-	a.Greater(t, mnp.Price, float64(0))
+	if err == nil {
+		a.NotNil(t, res)
+	}
+	if res == nil {
+		a.Nil(t, err)
+	}
+
+	a.Greater(t, res.Code, int64(0))
+	a.NotEmpty(t, res.Mnp.Country, 0)
+	a.NotEmpty(t, res.Mnp.InternationalFormatted, 0)
+	a.NotEmpty(t, res.Mnp.Mccmnc, 0)
+	a.NotEmpty(t, res.Mnp.NationalFormat, 0)
+	a.NotEmpty(t, res.Mnp.Network, 0)
+	a.NotEmpty(t, res.Mnp.Number, 0)
+	a.Greater(t, res.Price, float64(0))
 }

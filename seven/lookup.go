@@ -13,9 +13,7 @@ type Carrier struct {
 }
 
 type LookupParams struct {
-	Type   string `json:"type"`
-	Number string `json:"number,omitempty"`
-	Json   bool   `json:"json,omitempty"`
+	Number string `json:"number"`
 }
 
 type LookupCnamResponse struct {
@@ -138,37 +136,22 @@ func (api *LookupResource) HlrContext(ctx context.Context, p LookupParams) (*Loo
 	return &js, nil
 }
 
-func (api *LookupResource) Get(p LookupParams) (interface{}, error) {
-	return api.GetContext(context.Background(), p)
+func (api *LookupResource) Mnp(p LookupParams) (*LookupMnpResponse, error) {
+	return api.MnpContext(context.Background(), p)
 }
 
-func (api *LookupResource) GetContext(ctx context.Context, p LookupParams) (interface{}, error) {
-	res, err := api.client.request(ctx, "lookup", "GET", p)
+func (api *LookupResource) MnpContext(ctx context.Context, p LookupParams) (*LookupMnpResponse, error) {
+	res, err := api.client.request(ctx, "lookup/mnp", "GET", p)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var js interface{}
+	var js LookupMnpResponse
 
-	switch p.Type {
-	case "mnp":
-		if !p.Json {
-			return res, nil
-		}
-
-		js = &LookupMnpResponse{}
-	case "cnam":
-		js = &LookupCnamResponse{}
-	case "format":
-		js = &LookupFormatResponse{}
-	case "hlr":
-		js = &LookupHlrResponse{}
-	}
-
-	if err := json.Unmarshal([]byte(res), js); err != nil {
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
 		return nil, err
 	}
 
-	return js, nil
+	return &js, nil
 }
