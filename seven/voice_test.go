@@ -24,6 +24,8 @@ func TestVoiceResource_Dispatch(t *testing.T) {
 			a.NotEmpty(t, msg.Id)
 			a.NotEmpty(t, v.TotalPrice)
 		}
+
+		client.Voice.Hangup(VoiceHangupParams{CallIdentifier: *msg.Id})
 	} else {
 		a.Nil(t, v)
 	}

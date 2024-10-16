@@ -5,6 +5,15 @@ import (
 	"encoding/json"
 )
 
+type VoiceHangupParams struct {
+	CallIdentifier string
+}
+
+type VoiceHangup struct {
+	Success bool    `json:"success"`
+	Error   *string `json:"error"`
+}
+
 type Voice struct {
 	Balance    float64        `json:"balance"`
 	Debug      bool           `json:"debug"`
@@ -45,6 +54,26 @@ func (api *VoiceResource) DispatchContext(ctx context.Context, p VoiceParams) (*
 	}
 
 	var js = &Voice{}
+
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
+		return nil, err
+	}
+
+	return js, nil
+}
+
+func (api *VoiceResource) Hangup(p VoiceHangupParams) (o *VoiceHangup, e error) {
+	return api.HangupContext(context.Background(), p)
+}
+
+func (api *VoiceResource) HangupContext(ctx context.Context, p VoiceHangupParams) (*VoiceHangup, error) {
+	res, err := api.client.request(ctx, "voice/"+p.CallIdentifier+"/hangup", "POST", nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var js = &VoiceHangup{}
 
 	if err := json.Unmarshal([]byte(res), &js); err != nil {
 		return nil, err
