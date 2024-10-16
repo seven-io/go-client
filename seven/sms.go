@@ -18,6 +18,7 @@ type SmsParams struct {
 	Flash               bool      `json:"flash,omitempty"`
 	ForeignId           string    `json:"foreign_id,omitempty"`
 	From                string    `json:"from,omitempty"`
+	IsBinary            bool      `json:"is_binary,omitempty"`
 	Label               string    `json:"label,omitempty"`
 	PerformanceTracking bool      `json:"performance_tracking,omitempty"`
 	Text                string    `json:"text"`

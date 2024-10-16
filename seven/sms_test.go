@@ -14,6 +14,7 @@ var testSmsBaseParams = SmsParams{
 	Flash:               true,
 	ForeignId:           "GoTestForeignId",
 	From:                "Go-Test",
+	IsBinary:            false,
 	Label:               "GoTestLabel",
 	PerformanceTracking: true,
 	Text:                "Hey friend",
