@@ -24,14 +24,24 @@ func lookup(typ string, json bool, t *testing.T) interface{} {
 }
 
 func TestLookupFormat(t *testing.T) {
-	format := lookup("format", false, t).(*LookupFormatResponse)
-	a.NotEmpty(t, format.National)
-	a.NotEmpty(t, format.Carrier)
-	a.NotEmpty(t, format.CountryCode)
-	a.NotEmpty(t, format.CountryName)
-	a.NotEmpty(t, format.International)
-	a.NotEmpty(t, format.InternationalFormatted)
-	a.NotEmpty(t, format.NetworkType)
+	res, err := client.Lookup.Format(LookupParams{
+		Number: "491716992343",
+	})
+
+	if err == nil {
+		a.NotNil(t, res)
+	}
+	if res == nil {
+		a.Nil(t, err)
+	}
+
+	a.NotEmpty(t, res.National)
+	a.NotEmpty(t, res.Carrier)
+	a.NotEmpty(t, res.CountryCode)
+	a.NotEmpty(t, res.CountryName)
+	a.NotEmpty(t, res.International)
+	a.NotEmpty(t, res.InternationalFormatted)
+	a.NotEmpty(t, res.NetworkType)
 }
 
 func TestLookupCnam(t *testing.T) {

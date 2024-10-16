@@ -98,6 +98,26 @@ func (api *LookupResource) CnamContext(ctx context.Context, p LookupParams) (*Lo
 	return &js, nil
 }
 
+func (api *LookupResource) Format(p LookupParams) (*LookupFormatResponse, error) {
+	return api.FormatContext(context.Background(), p)
+}
+
+func (api *LookupResource) FormatContext(ctx context.Context, p LookupParams) (*LookupFormatResponse, error) {
+	res, err := api.client.request(ctx, "lookup/format", "GET", p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var js LookupFormatResponse
+
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
+		return nil, err
+	}
+
+	return &js, nil
+}
+
 func (api *LookupResource) Get(p LookupParams) (interface{}, error) {
 	return api.GetContext(context.Background(), p)
 }
