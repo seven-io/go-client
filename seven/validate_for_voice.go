@@ -6,7 +6,7 @@ import (
 )
 
 type ValidateForVoiceParams struct {
-	Callback string `json:"callback"`
+	Callback string `json:"callback,omitempty"`
 	Number   string `json:"number"`
 }
 
