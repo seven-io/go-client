@@ -12,7 +12,7 @@ type SmsFile struct {
 	Password *string `json:"password,omitempty"`
 }
 
-type SmsBaseParams struct {
+type SmsParams struct {
 	Delay               string    `json:"delay,omitempty"`
 	Files               []SmsFile `json:"files,omitempty"`
 	Flash               bool      `json:"flash,omitempty"`
@@ -27,12 +27,6 @@ type SmsBaseParams struct {
 	Udh                 string    `json:"udh,omitempty"`
 	Unicode             bool      `json:"unicode,omitempty"`
 	Utf8                bool      `json:"utf8,omitempty"`
-}
-
-type SmsTextParams struct {
-	SmsBaseParams
-	Details         bool `json:"details,omitempty"`
-	ReturnMessageId bool `json:"return_msg_id,omitempty"`
 }
 
 type SmsResource resource
@@ -71,27 +65,11 @@ func (api *SmsResource) request(ctx context.Context, p interface{}) (*string, er
 	return &res, nil
 }
 
-func (api *SmsResource) Text(p SmsTextParams) (res *string, err error) {
-	return api.TextContext(context.Background(), p)
-}
-
-func (api *SmsResource) TextContext(ctx context.Context, p SmsTextParams) (res *string, err error) {
-	return api.request(ctx, p)
-}
-
-func (api *SmsResource) Json(p SmsBaseParams) (o *SmsResponse, err error) {
+func (api *SmsResource) Json(p SmsParams) (o *SmsResponse, err error) {
 	return api.JsonContext(context.Background(), p)
 }
-func (api *SmsResource) JsonContext(ctx context.Context, p SmsBaseParams) (o *SmsResponse, err error) {
-	type SmsJsonParams struct {
-		SmsBaseParams
-		Json bool `json:"json,omitempty"`
-	}
-
-	res, err := api.request(ctx, SmsJsonParams{
-		SmsBaseParams: p,
-		Json:          true,
-	})
+func (api *SmsResource) JsonContext(ctx context.Context, p SmsParams) (o *SmsResponse, err error) {
+	res, err := api.request(ctx, p)
 
 	if nil != err {
 		return nil, err
