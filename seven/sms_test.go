@@ -15,14 +15,11 @@ var testSmsBaseParams = SmsParams{
 	ForeignId:           "GoTestForeignId",
 	From:                "Go-Test",
 	Label:               "GoTestLabel",
-	NoReload:            false,
 	PerformanceTracking: true,
 	Text:                "Hey friend",
 	To:                  "491716992343",
 	Ttl:                 320000,
 	Udh:                 "GoTestUserDataHeader",
-	Unicode:             false,
-	Utf8:                false,
 }
 
 func TestSmsResource_Json(t *testing.T) {
