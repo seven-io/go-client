@@ -5,66 +5,26 @@ import (
 	"testing"
 )
 
-func testVoiceBuildParams(p VoiceParams) VoiceParams {
-	text := "Just testing ;-)"
-
-	if p.Xml {
-		text = `<Response><Play digits="1wwwwww4"></Play><Say>Hello Sir!</Say></Response>`
-	}
-
-	p.From = "491771783130"
-	p.Text = text
-	p.To = "491716992343"
-
-	return p
-}
-
-func testVoiceJson(p VoiceParams, t *testing.T) {
-	v, e := client.Voice.Json(testVoiceBuildParams(p))
+func TestVoiceResource_Dispatch(t *testing.T) {
+	v, e := client.Voice.Dispatch(VoiceParams{
+		To:   "491716992343",
+		Text: `<Response><Play digits="1wwwwww4"></Play><Say>Hello Sir!</Say></Response>`,
+		From: "491771783130",
+	})
 
 	if nil == e {
-		testVoiceAssert(p, v, t)
+		var msg = v.Messages[0]
+
+		if testIsDummy {
+			a.Equal(t, "100", v.Success)
+			a.Equal(t, 0, msg.Id)
+			a.Equal(t, 0, v.TotalPrice)
+		} else {
+			a.NotEmpty(t, v.Success)
+			a.NotEmpty(t, msg.Id)
+			a.NotEmpty(t, v.TotalPrice)
+		}
 	} else {
 		a.Nil(t, v)
 	}
-}
-
-func testVoiceText(p VoiceParams, t *testing.T) {
-	res, err := client.Voice.Text(testVoiceBuildParams(p))
-
-	if nil == err {
-		testVoiceAssert(p, makeVoice(*res), t)
-	} else {
-		a.Nil(t, res)
-	}
-}
-
-func testVoiceAssert(p VoiceParams, v Voice, t *testing.T) {
-	if testIsDummy {
-		var x = Voice{Code: 100, Cost: 0, Id: 123456789}
-
-		a.Equal(t, x.Code, v.Code)
-		a.Equal(t, x.Id, v.Id)
-		a.Equal(t, x.Cost, v.Cost)
-	} else {
-		a.NotEmpty(t, v.Code)
-		a.NotEmpty(t, v.Id)
-		a.NotEmpty(t, v.Cost)
-	}
-}
-
-func TestVoiceResource_Text(t *testing.T) {
-	testVoiceText(VoiceParams{}, t)
-}
-
-func TestVoiceResource_Text_Xml(t *testing.T) {
-	testVoiceText(VoiceParams{Xml: true}, t)
-}
-
-func TestVoiceResource_Json(t *testing.T) {
-	testVoiceJson(VoiceParams{}, t)
-}
-
-func TestVoiceResource_Json_Xml(t *testing.T) {
-	testVoiceJson(VoiceParams{Xml: true}, t)
 }

@@ -2,14 +2,26 @@ package seven
 
 import (
 	"context"
-	"strconv"
-	"strings"
+	"encoding/json"
 )
 
 type Voice struct {
-	Code int
-	Cost float64
-	Id   int
+	Balance    float64        `json:"balance"`
+	Debug      bool           `json:"debug"`
+	TotalPrice float64        `json:"total_price"`
+	Success    string         `json:"success"`
+	Messages   []VoiceMessage `json:"messages"`
+}
+
+type VoiceMessage struct {
+	Error     *string `json:"error"`
+	ErrorText *string `json:"error_text"`
+	Id        *string `json:"id"`
+	Price     float64 `json:"price"`
+	Recipient string  `json:"recipient"`
+	Sender    string  `json:"sender"`
+	Success   bool    `json:"success"`
+	Text      string  `json:"text"`
 }
 
 type VoiceParams struct {
@@ -21,40 +33,22 @@ type VoiceParams struct {
 
 type VoiceResource resource
 
-func makeVoice(res string) Voice {
-	lines := strings.Split(res, "\n")
-
-	code, _ := strconv.Atoi(lines[0])
-	id, _ := strconv.Atoi(lines[1])
-	cost, _ := strconv.ParseFloat(lines[2], 64)
-
-	return Voice{
-		Code: code,
-		Cost: cost,
-		Id:   id,
-	}
+func (api *VoiceResource) Dispatch(p VoiceParams) (o *Voice, e error) {
+	return api.DispatchContext(context.Background(), p)
 }
 
-func (api *VoiceResource) Text(p VoiceParams) (*string, error) {
-	return api.TextContext(context.Background(), p)
-}
-
-func (api *VoiceResource) TextContext(ctx context.Context, p VoiceParams) (*string, error) {
+func (api *VoiceResource) DispatchContext(ctx context.Context, p VoiceParams) (*Voice, error) {
 	res, err := api.client.request(ctx, "voice", "POST", p)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &res, nil
-}
+	var js = &Voice{}
 
-func (api *VoiceResource) Json(p VoiceParams) (o Voice, e error) {
-	r, e := api.Text(p)
-
-	if nil != e {
-		return
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
+		return nil, err
 	}
 
-	return makeVoice(*r), nil
+	return js, nil
 }
