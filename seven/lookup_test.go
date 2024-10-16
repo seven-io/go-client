@@ -5,6 +5,27 @@ import (
 	"testing"
 )
 
+func TestLookupRcs(t *testing.T) {
+	res, err := client.Lookup.Rcs(LookupParams{
+		Number: "491716992343",
+	})
+
+	if err == nil {
+		a.NotNil(t, res)
+	}
+	if res == nil {
+		a.Nil(t, err)
+	}
+
+	a.NotEmpty(t, res.National)
+	a.NotEmpty(t, res.Carrier)
+	a.NotEmpty(t, res.CountryCode)
+	a.NotEmpty(t, res.CountryName)
+	a.NotEmpty(t, res.International)
+	a.NotEmpty(t, res.InternationalFormatted)
+	a.NotEmpty(t, res.NetworkType)
+}
+
 func TestLookupFormat(t *testing.T) {
 	res, err := client.Lookup.Format(LookupParams{
 		Number: "491716992343",

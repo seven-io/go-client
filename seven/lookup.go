@@ -35,6 +35,19 @@ type LookupFormatResponse struct {
 	Success                bool   `json:"success"`
 }
 
+type LookupRcsResponse struct {
+	National               string   `json:"national"`
+	Carrier                string   `json:"carrier"`
+	CountryCode            string   `json:"country_code"`
+	CountryIso             string   `json:"country_iso"`
+	CountryName            string   `json:"country_name"`
+	International          string   `json:"international"`
+	InternationalFormatted string   `json:"international_formatted"`
+	NetworkType            string   `json:"network_type"`
+	Success                bool     `json:"success"`
+	RcsCapabilities        []string `json:"rcs_capabilities"`
+}
+
 type LookupHlrResponse struct {
 	CountryCode               string  `json:"country_code"`
 	CountryCodeIso3           *string `json:"country_code_iso3,omitempty"`
@@ -148,6 +161,26 @@ func (api *LookupResource) MnpContext(ctx context.Context, p LookupParams) (*Loo
 	}
 
 	var js LookupMnpResponse
+
+	if err := json.Unmarshal([]byte(res), &js); err != nil {
+		return nil, err
+	}
+
+	return &js, nil
+}
+
+func (api *LookupResource) Rcs(p LookupParams) (*LookupRcsResponse, error) {
+	return api.RcsContext(context.Background(), p)
+}
+
+func (api *LookupResource) RcsContext(ctx context.Context, p LookupParams) (*LookupRcsResponse, error) {
+	res, err := api.client.request(ctx, "lookup/rcs", "GET", p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var js LookupRcsResponse
 
 	if err := json.Unmarshal([]byte(res), &js); err != nil {
 		return nil, err
