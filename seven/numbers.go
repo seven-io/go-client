@@ -107,11 +107,15 @@ type NumbersAvailableParams = struct {
 	FeaturesVoice                  bool   `json:"features_voice,omitempty"`
 }
 
-func (api *NumbersResource) Get(p NumbersGetParams) (c Group, e error) {
+type NumberDeleted = struct {
+	Success bool `json:"success"`
+}
+
+func (api *NumbersResource) Get(p NumbersGetParams) (c Number, e error) {
 	return api.GetContext(context.Background(), p)
 }
 
-func (api *NumbersResource) GetContext(ctx context.Context, p NumbersGetParams) (c Group, e error) {
+func (api *NumbersResource) GetContext(ctx context.Context, p NumbersGetParams) (c Number, e error) {
 	s, e := api.client.request(ctx, fmt.Sprintf("numbers/%s", p.Number), string(HttpMethodGet), nil)
 
 	if nil != e {
@@ -155,23 +159,23 @@ func (api *NumbersResource) ActiveNumbersContext(ctx context.Context) (a Numbers
 	return
 }
 
-func (api *NumbersResource) Order(p NumberOrderParams) (c Group, e error) {
+func (api *NumbersResource) Order(p NumberOrderParams) (c Number, e error) {
 	return api.OrderContext(context.Background(), p)
 }
 
-func (api *NumbersResource) OrderContext(ctx context.Context, p NumberOrderParams) (c Group, e error) {
-	s, e := api.client.request(ctx, "groups/active", string(HttpMethodPost), p)
+func (api *NumbersResource) OrderContext(ctx context.Context, p NumberOrderParams) (c Number, e error) {
+	s, e := api.client.request(ctx, "numbers/order", string(HttpMethodPost), p)
 
 	e = json.Unmarshal([]byte(s), &c)
 
 	return
 }
 
-func (api *NumbersResource) Delete(p NumbersDeleteParams, phone string) (o GroupsDeleteResponse, e error) {
-	return api.DeleteContext(context.Background(), p, phone)
+func (api *NumbersResource) Delete(phone string, p NumbersDeleteParams) (o NumberDeleted, e error) {
+	return api.DeleteContext(context.Background(), phone, p)
 }
 
-func (api *NumbersResource) DeleteContext(ctx context.Context, p NumbersDeleteParams, phone string) (o GroupsDeleteResponse, e error) {
+func (api *NumbersResource) DeleteContext(ctx context.Context, phone string, p NumbersDeleteParams) (o NumberDeleted, e error) {
 	s, e := api.client.request(ctx, fmt.Sprintf("numbers/active/%s", phone), string(HttpMethodDelete), p)
 
 	e = json.Unmarshal([]byte(s), &o)
@@ -179,12 +183,12 @@ func (api *NumbersResource) DeleteContext(ctx context.Context, p NumbersDeletePa
 	return
 }
 
-func (api *NumbersResource) Update(number string, p NumberUpdateParams) (e error) {
+func (api *NumbersResource) Update(number string, p NumberUpdateParams) (n Number, e error) {
 	return api.UpdateContext(context.Background(), number, p)
 }
 
-func (api *NumbersResource) UpdateContext(ctx context.Context, number string, p NumberUpdateParams) (e error) {
-	_, e = api.client.request(ctx, fmt.Sprintf("numbers/active/%s", number), string(HttpMethodPatch), p)
-
+func (api *NumbersResource) UpdateContext(ctx context.Context, number string, p NumberUpdateParams) (n Number, e error) {
+	r, e := api.client.request(ctx, fmt.Sprintf("numbers/active/%s", number), string(HttpMethodPatch), p)
+	e = json.Unmarshal([]byte(r), &n)
 	return
 }
