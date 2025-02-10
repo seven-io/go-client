@@ -2,6 +2,7 @@ package sms77api
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"strings"
 )
@@ -13,11 +14,17 @@ type Voice struct {
 }
 
 type VoiceParams struct {
-	Debug bool   `json:"debug,omitempty"`
-	To    string `json:"to"`
-	Text  string `json:"text"`
-	Xml   bool   `json:"xml,omitempty"`
-	From  string `json:"from,omitempty"`
+	// Debug is for internal use only.
+	Debug bool `json:"debug,omitempty"`
+
+	To        string `json:"to"`
+	Text      string `json:"text"`
+	From      string `json:"from,omitempty"`
+	Ringtime  int    `json:"ringtime,omitempty"`
+	ForeignId string `json:"foreign_id,omitempty"`
+	// Deprecated: Xml exists for historical compatibility and should not be used.
+	// Please remove all uses of this option.
+	Xml bool `json:"xml,omitempty"`
 }
 
 type VoiceResource resource
@@ -41,7 +48,7 @@ func (api *VoiceResource) Text(p VoiceParams) (*string, error) {
 }
 
 func (api *VoiceResource) TextContext(ctx context.Context, p VoiceParams) (*string, error) {
-	res, err := api.client.request(ctx, "voice", "POST", p)
+	res, err := api.client.request(ctx, "voice", http.MethodPost, p)
 
 	if err != nil {
 		return nil, err
