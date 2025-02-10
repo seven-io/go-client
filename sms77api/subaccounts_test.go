@@ -2,14 +2,15 @@ package sms77api
 
 import (
 	"fmt"
-	a "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	a "github.com/stretchr/testify/assert"
 )
 
 func TestSubaccountsResource_TransferCredits(t *testing.T) {
 	res, err := client.Subaccounts.TransferCredits(TransferCreditsToSubaccountParams{
-		Amount: -0.0,
+		Amount: 0.0,
 		Id:     0,
 	})
 
@@ -46,9 +47,9 @@ func TestSubaccountsResource_TransferCredits(t *testing.T) {
 
 func TestSubaccountsResource_AutoCharge(t *testing.T) {
 	res, err := client.Subaccounts.AutoCharge(AutoChargeSubaccountParams{
-		Amount:    -0.0,
+		Amount:    0.0,
 		Id:        0,
-		Threshold: -0.0,
+		Threshold: 0.0,
 	})
 
 	if err != nil {

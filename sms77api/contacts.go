@@ -159,6 +159,9 @@ func (api *ContactsResource) CreateJson() (o ContactsCreateJsonResponse, e error
 
 func (api *ContactsResource) CreateJsonContext(ctx context.Context) (o ContactsCreateJsonResponse, e error) {
 	s, e := api.request(ctx, HttpMethodGet, newContactsCreateApiParams(true))
+	if e != nil {
+		return
+	}
 
 	e = json.Unmarshal([]byte(s), &o)
 
@@ -179,6 +182,9 @@ func (api *ContactsResource) DeleteJson(p ContactsDeleteParams) (o ContactsDelet
 
 func (api *ContactsResource) DeleteJsonContext(ctx context.Context, p ContactsDeleteParams) (o ContactsDeleteJsonResponse, e error) {
 	s, e := api.request(ctx, HttpMethodGet, newContactsDeleteApiParams(p, true))
+	if e != nil {
+		return
+	}
 
 	e = json.Unmarshal([]byte(s), &o)
 
@@ -199,6 +205,9 @@ func (api *ContactsResource) EditJson(p ContactEditParams) (o ContactsEditJsonRe
 
 func (api *ContactsResource) EditJsonContext(ctx context.Context, p ContactEditParams) (o ContactsEditJsonResponse, e error) {
 	s, e := api.request(ctx, HttpMethodGet, newContactsEditJsonApiParams(p, true))
+	if e != nil {
+		return
+	}
 
 	e = json.Unmarshal([]byte(s), &o)
 
