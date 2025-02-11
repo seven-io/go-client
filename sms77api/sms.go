@@ -20,19 +20,24 @@ type SmsBaseParams struct {
 	ForeignId           string    `json:"foreign_id,omitempty"`
 	From                string    `json:"from,omitempty"`
 	Label               string    `json:"label,omitempty"`
-	NoReload            bool      `json:"no_reload,omitempty"`
 	PerformanceTracking bool      `json:"performance_tracking,omitempty"`
 	Text                string    `json:"text"`
 	To                  string    `json:"to"`
 	Ttl                 int64     `json:"ttl,omitempty"`
 	Udh                 string    `json:"udh,omitempty"`
-	Unicode             bool      `json:"unicode,omitempty"`
-	Utf8                bool      `json:"utf8,omitempty"`
+	// Deprecated: Unicode is not necessary as the gateway automatically recognizes the coding.
+	Unicode bool `json:"unicode,omitempty"`
+	// Deprecated: Utf8 is deprecated.
+	Utf8 bool `json:"utf8,omitempty"`
+	// Deprecated: NoReload is deprecated.
+	NoReload bool `json:"no_reload,omitempty"`
 }
 
 type SmsTextParams struct {
 	SmsBaseParams
-	Details         bool `json:"details,omitempty"`
+	// Deprecated: Details is deprecated.
+	Details bool `json:"details,omitempty"`
+	// Deprecated: ReturnMessageId is deprecated.
 	ReturnMessageId bool `json:"return_msg_id,omitempty"`
 }
 
