@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -112,14 +112,6 @@ func New(options Options) *Sms77API {
 	return c
 }
 
-func (api *Sms77API) get(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
-	return api.request(ctx, endpoint, http.MethodGet, data)
-}
-
-func (api *Sms77API) post(ctx context.Context, endpoint string, data map[string]interface{}) (string, error) {
-	return api.request(ctx, endpoint, http.MethodPost, data)
-}
-
 func (api *Sms77API) request(ctx context.Context, endpoint string, method string, data interface{}) (string, error) {
 	createRequestPayload := func() string {
 		params := url.Values{}
@@ -129,7 +121,7 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 				log.Printf("%s: %v", k, v)
 			}
 
-			switch v.(type) {
+			switch x := v.(type) {
 			case nil:
 				continue
 			case bool:
@@ -139,9 +131,9 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 					v = "0"
 				}
 			case int64:
-				v = strconv.FormatInt(v.(int64), 10)
+				v = strconv.FormatInt(x, 10)
 			case []interface{}:
-				for fileIndex, files := range v.([]interface{}) {
+				for fileIndex, files := range x {
 					for fileKey, fileValue := range files.(map[string]interface{}) {
 						params.Add(
 							fmt.Sprintf("%s[%d][%s]", k, fileIndex, fileKey), fmt.Sprintf("%v", fileValue))
@@ -195,7 +187,7 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 	}
 
 	if http.MethodGet != method && http.MethodPost != method {
-		return "", errors.New(fmt.Sprintf("unsupported http method %s", method))
+		return "", fmt.Errorf("unsupported http method %s", method)
 	}
 
 	if "" == api.Options.ApiKey {
@@ -220,7 +212,7 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", fmt.Errorf("could not execute request! #3 (%s)", err.Error())
 	}
@@ -236,7 +228,7 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 	if 2 == length || 3 == length {
 		code, msg := pickMapByKey(str, StatusCodes)
 		if nil != code {
-			return "", errors.New(fmt.Sprintf("%s: %s", code, msg))
+			return "", fmt.Errorf("%s: %s", code, msg)
 		}
 	}
 
