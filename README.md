@@ -5,7 +5,7 @@
 
 ## Installation
 
-Requires Go 1.13+.
+Requires Go 1.17+.
 
 ```go get github.com/seven-io/go-client/sms77api```
 
