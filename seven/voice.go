@@ -3,10 +3,11 @@ package seven
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 )
 
 type VoiceHangupParams struct {
-	CallIdentifier string
+	CallIdentifier int64
 }
 
 type VoiceHangup struct {
@@ -25,7 +26,7 @@ type Voice struct {
 type VoiceMessage struct {
 	Error     *string `json:"error"`
 	ErrorText *string `json:"error_text"`
-	Id        *string `json:"id"`
+	Id        *int64  `json:"id"`
 	Price     float64 `json:"price"`
 	Recipient string  `json:"recipient"`
 	Sender    string  `json:"sender"`
@@ -67,7 +68,8 @@ func (api *VoiceResource) Hangup(p VoiceHangupParams) (o *VoiceHangup, e error) 
 }
 
 func (api *VoiceResource) HangupContext(ctx context.Context, p VoiceHangupParams) (*VoiceHangup, error) {
-	res, err := api.client.request(ctx, "voice/"+p.CallIdentifier+"/hangup", "POST", nil)
+	endpoint := fmt.Sprintf("voice/%d/hangup", p.CallIdentifier)
+	res, err := api.client.request(ctx, endpoint, "POST", nil)
 
 	if err != nil {
 		return nil, err
