@@ -140,7 +140,7 @@ func (api *ContactsResource) ReadJsonContext(ctx context.Context, p ContactsRead
 		return
 	}
 
-	json.Unmarshal([]byte(s), &a)
+	e = json.Unmarshal([]byte(s), &a)
 
 	return
 }
