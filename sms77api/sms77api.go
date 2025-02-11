@@ -227,7 +227,6 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 
 	if 2 == length || 3 == length {
 		code := StatusCode(str)
-
 		if msg, ok := StatusCodes[code]; ok {
 			return "", fmt.Errorf("%s: %s", code, msg)
 		}
