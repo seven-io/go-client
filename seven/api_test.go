@@ -15,7 +15,7 @@ func TestStatusText(t *testing.T) {
 	text := StatusText(StatusCodeSuccess)
 	a.Equal(t, StatusCodes[StatusCodeSuccess], text)
 
-	unknownCode := StatusCode("000")
+	unknownCode := StatusCode("00000")
 	text = StatusText(unknownCode)
-	a.Contains(t, text, string(unknownCode))
+	a.Equal(t, text, "Unknown")
 }

@@ -94,12 +94,14 @@ var StatusCodes = map[StatusCode]string{
 	StatusCodeErrorServerIp:               "ErrorServerIp",
 }
 
+// StatusText returns a text for the SMS status code.
+// If the code is unknown, the string “Unknown” is returned.
 func StatusText(code StatusCode) string {
 	if msg, ok := StatusCodes[code]; ok {
 		return msg
 	}
 
-	return fmt.Sprintf("Unknown status code: %s", code)
+	return "Unknown"
 }
 
 func New(options Options) *API {
