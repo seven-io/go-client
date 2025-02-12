@@ -25,7 +25,13 @@ type GroupOrderParams struct {
 	PaymentInterval PaymentInterval `json:"payment_interval"`
 }
 
+type GroupCreateParams struct {
+	// Name of the group
+	Name string `json:"name"`
+}
+
 type GroupUpdateParams struct {
+	// Name is the new name of the group.
 	Name string `json:"name"`
 }
 
@@ -58,7 +64,7 @@ func (api *GroupsResource) GetContext(ctx context.Context, p GroupsGetParams) (c
 		return
 	}
 
-	json.Unmarshal([]byte(s), &c)
+	e = json.Unmarshal([]byte(s), &c)
 
 	return
 }
@@ -74,20 +80,22 @@ func (api *GroupsResource) ListContext(ctx context.Context, p GroupsListParams) 
 		return
 	}
 
-	json.Unmarshal([]byte(s), &a)
+	e = json.Unmarshal([]byte(s), &a)
 
 	return
 }
 
-func (api *GroupsResource) Create(p GroupOrderParams) (c Group, e error) {
+func (api *GroupsResource) Create(p GroupCreateParams) (c Group, e error) {
 	return api.CreateContext(context.Background(), p)
 }
 
-func (api *GroupsResource) CreateContext(ctx context.Context, p GroupOrderParams) (c Group, e error) {
+func (api *GroupsResource) CreateContext(ctx context.Context, p GroupCreateParams) (c Group, e error) {
 	s, e := api.client.request(ctx, "groups", string(HttpMethodPost), p)
+	if e != nil {
+		return
+	}
 
 	e = json.Unmarshal([]byte(s), &c)
-
 	return
 }
 
@@ -97,6 +105,9 @@ func (api *GroupsResource) Delete(p GroupsDeleteParams) (o GroupsDeleteResponse,
 
 func (api *GroupsResource) DeleteContext(ctx context.Context, p GroupsDeleteParams) (o GroupsDeleteResponse, e error) {
 	s, e := api.client.request(ctx, fmt.Sprintf("groups/%d", p.ID), string(HttpMethodDelete), p)
+	if e != nil {
+		return
+	}
 
 	e = json.Unmarshal([]byte(s), &o)
 
