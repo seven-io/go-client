@@ -57,13 +57,15 @@ func (m *VoiceMessage) UnmarshalJSON(b []byte) error {
 		return errM
 	}
 
+	// This is a trick that prevents the object from referencing itself during encoding,
+	// which would result in an endless recursion.
 	type messageCopy VoiceMessage
-
 	var result messageCopy
 	if err := json.Unmarshal(b, &result); err != nil {
 		return err
 	}
 	*m = VoiceMessage(result)
+
 	return nil
 }
 
