@@ -51,8 +51,9 @@ func TestVoiceMessage_UnmarshalJSON(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			msg := &VoiceMessage{}
 			err := json.Unmarshal(test.data, &msg)
-			a.NoError(t, err)
-			a.Equal(t, test.excepted, msg.Id)
+			if a.NoError(t, err) {
+				a.Equal(t, test.excepted, msg.Id)
+			}
 		})
 	}
 }
