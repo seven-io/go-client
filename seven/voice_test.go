@@ -41,10 +41,10 @@ func TestVoiceMessage_UnmarshalJSON(t *testing.T) {
 		data     []byte
 		excepted *int64
 	}{
-		{"id=\"1384013\"", []byte(`{"id": "1384013"}`), &expectedNumber},
-		{"id=1384013", []byte(`{"id": 1384013}`), &expectedNumber},
-		{"id=nil", []byte(`{"id": null}`), nil},
-		{"id=missing", []byte(`{}`), nil},
+		{`id="1384013"`, []byte(`{"id": "1384013"}`), &expectedNumber},
+		{`id=1384013`, []byte(`{"id": 1384013}`), &expectedNumber},
+		{`id=nil`, []byte(`{"id": null}`), nil},
+		{`id=missing`, []byte(`{}`), nil},
 	}
 
 	for _, test := range tests {
