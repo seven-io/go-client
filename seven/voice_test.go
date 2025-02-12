@@ -1,8 +1,10 @@
 package seven
 
 import (
-	a "github.com/stretchr/testify/assert"
+	"encoding/json"
 	"testing"
+
+	a "github.com/stretchr/testify/assert"
 )
 
 func TestVoiceResource_Dispatch(t *testing.T) {
@@ -28,5 +30,28 @@ func TestVoiceResource_Dispatch(t *testing.T) {
 		client.Voice.Hangup(VoiceHangupParams{CallIdentifier: *msg.Id})
 	} else {
 		a.Nil(t, v)
+	}
+}
+
+func TestVoiceMessage_UnmarshalJSON(t *testing.T) {
+	expectedNumber := int64(1384013)
+	tests := []struct {
+		name     string
+		data     []byte
+		excepted *int64
+	}{
+		{"IdIsString", []byte(`{"id": "1384013"}`), &expectedNumber},
+		{"IdIsNumber", []byte(`{"id": 1384013}`), &expectedNumber},
+		{"IdIsNil", []byte(`{"id": null}`), nil},
+		{"IdIsMissing", []byte(`{}`), nil},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			msg := &VoiceMessage{}
+			err := json.Unmarshal(test.data, &msg)
+			a.NoError(t, err)
+			a.Equal(t, test.excepted, msg.Id)
+		})
 	}
 }
