@@ -19,8 +19,9 @@ func TestVoiceResource_Dispatch(t *testing.T) {
 
 		if testIsDummy {
 			a.Equal(t, "100", v.Success)
-			a.Equal(t, 0, msg.Id)
-			a.Equal(t, 0, v.TotalPrice)
+			exceptedId := int64(123456789)
+			a.Equal(t, &exceptedId, msg.Id)
+			a.Equal(t, 0.0, v.TotalPrice)
 		} else {
 			a.NotEmpty(t, v.Success)
 			a.NotEmpty(t, msg.Id)
