@@ -23,14 +23,14 @@ type Voice struct {
 }
 
 type VoiceMessage struct {
-	Error     *string `json:"error"`
-	ErrorText *string `json:"error_text"`
-	Id        *string `json:"id"`
-	Price     float64 `json:"price"`
-	Recipient string  `json:"recipient"`
-	Sender    string  `json:"sender"`
-	Success   bool    `json:"success"`
-	Text      string  `json:"text"`
+	Error     *StatusCode `json:"error"`
+	ErrorText *string     `json:"error_text"`
+	Id        *string     `json:"id"`
+	Price     float64     `json:"price"`
+	Recipient string      `json:"recipient"`
+	Sender    string      `json:"sender"`
+	Success   bool        `json:"success"`
+	Text      string      `json:"text"`
 }
 
 type VoiceParams struct {
