@@ -20,11 +20,6 @@ type Group struct {
 	ID           uint   `json:"id"`
 }
 
-type GroupOrderParams struct {
-	Number          string          `json:"number"`
-	PaymentInterval PaymentInterval `json:"payment_interval"`
-}
-
 type GroupCreateParams struct {
 	// Name of the group
 	Name string `json:"name"`
