@@ -45,7 +45,7 @@ func (m *VoiceMessage) UnmarshalJSON(b []byte) error {
 
 	switch idVal := data["id"].(type) {
 	case string:
-		if id, err := strconv.ParseInt(idVal, 0, 64); err != nil {
+		if id, err := strconv.ParseInt(idVal, 10, 64); err != nil {
 			return err
 		} else {
 			data["id"] = id
