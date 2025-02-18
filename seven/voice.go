@@ -3,10 +3,12 @@ package seven
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strconv"
 )
 
 type VoiceHangupParams struct {
-	CallIdentifier string
+	CallIdentifier int64
 }
 
 type VoiceHangup struct {
@@ -24,13 +26,47 @@ type Voice struct {
 
 type VoiceMessage struct {
 	Error     *StatusCode `json:"error"`
-	ErrorText *string     `json:"error_text"`
-	Id        *string     `json:"id"`
-	Price     float64     `json:"price"`
-	Recipient string      `json:"recipient"`
-	Sender    string      `json:"sender"`
-	Success   bool        `json:"success"`
-	Text      string      `json:"text"`
+	ErrorText *string `json:"error_text"`
+	Id        *int64  `json:"id"`
+	Price     float64 `json:"price"`
+	Recipient string  `json:"recipient"`
+	Sender    string  `json:"sender"`
+	Success   bool    `json:"success"`
+	Text      string  `json:"text"`
+}
+
+// UnmarshalJSON is a workaround as a result of https://github.com/seven-io/go-client/issues/10.
+// The Id can be a string or a number and is converted into a number here.
+func (m *VoiceMessage) UnmarshalJSON(b []byte) error {
+	data := make(map[string]interface{}, 0)
+	if err := json.Unmarshal(b, &data); err != nil {
+		return err
+	}
+
+	switch idVal := data["id"].(type) {
+	case string:
+		if id, err := strconv.ParseInt(idVal, 10, 64); err != nil {
+			return err
+		} else {
+			data["id"] = id
+		}
+	}
+
+	b, errM := json.Marshal(data)
+	if errM != nil {
+		return errM
+	}
+
+	// This is a trick that prevents the object from referencing itself during encoding,
+	// which would result in an endless recursion.
+	type messageCopy VoiceMessage
+	var result messageCopy
+	if err := json.Unmarshal(b, &result); err != nil {
+		return err
+	}
+	*m = VoiceMessage(result)
+
+	return nil
 }
 
 type VoiceParams struct {
@@ -67,7 +103,8 @@ func (api *VoiceResource) Hangup(p VoiceHangupParams) (o *VoiceHangup, e error) 
 }
 
 func (api *VoiceResource) HangupContext(ctx context.Context, p VoiceHangupParams) (*VoiceHangup, error) {
-	res, err := api.client.request(ctx, "voice/"+p.CallIdentifier+"/hangup", "POST", nil)
+	endpoint := fmt.Sprintf("voice/%d/hangup", p.CallIdentifier)
+	res, err := api.client.request(ctx, endpoint, "POST", nil)
 
 	if err != nil {
 		return nil, err
