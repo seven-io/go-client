@@ -20,12 +20,12 @@ type Voice struct {
 	Balance    float64        `json:"balance"`
 	Debug      bool           `json:"debug"`
 	TotalPrice float64        `json:"total_price"`
-	Success    string         `json:"success"`
+	Success    StatusCode     `json:"success"`
 	Messages   []VoiceMessage `json:"messages"`
 }
 
 type VoiceMessage struct {
-	Error     *string `json:"error"`
+	Error     *StatusCode `json:"error"`
 	ErrorText *string `json:"error_text"`
 	Id        *int64  `json:"id"`
 	Price     float64 `json:"price"`

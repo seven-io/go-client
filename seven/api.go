@@ -69,6 +69,7 @@ const (
 	StatusCodeErrorCarrierDelivery        StatusCode = "600"
 	StatusCodeErrorUnknown                StatusCode = "700"
 	StatusCodeErrorAuthentication         StatusCode = "900"
+	StatusCodeErrorSigning                StatusCode = "901"
 	StatusCodeErrorApiDisabledForKey      StatusCode = "902"
 	StatusCodeErrorServerIp               StatusCode = "903"
 )
@@ -88,8 +89,19 @@ var StatusCodes = map[StatusCode]string{
 	StatusCodeErrorCarrierDelivery:        "ErrorCarrierDelivery",
 	StatusCodeErrorUnknown:                "ErrorUnknown",
 	StatusCodeErrorAuthentication:         "ErrorAuthentication",
+	StatusCodeErrorSigning:                "ErrorSigning",
 	StatusCodeErrorApiDisabledForKey:      "ErrorApiDisabledForKey",
 	StatusCodeErrorServerIp:               "ErrorServerIp",
+}
+
+// StatusText returns a text for the SMS status code.
+// If the code is unknown, the string “Unknown” is returned.
+func StatusText(code StatusCode) string {
+	if msg, ok := StatusCodes[code]; ok {
+		return msg
+	}
+
+	return "Unknown"
 }
 
 func New(options Options) *API {
