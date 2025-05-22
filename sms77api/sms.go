@@ -54,7 +54,7 @@ type SmsResponse struct {
 
 type SmsResponseMessage struct {
 	Encoding  string    `json:"encoding"`
-	Error     *string   `json:"error"`
+	Error     *int64    `json:"error"`
 	ErrorText *string   `json:"error_text"`
 	Id        *string   `json:"id"`
 	Label     *string   `json:"label"`
