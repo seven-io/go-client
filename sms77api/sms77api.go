@@ -225,6 +225,11 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 
 	length := len(str)
 
+	// Handle API authentication errors (900/901/902/903)
+	if str == "900" || str == "901" || str == "902" || str == "903" {
+		return "", fmt.Errorf("API authentication error: %s", str)
+	}
+
 	if 2 == length || 3 == length {
 		code, msg := pickMapByKey(str, StatusCodes)
 		if nil != code {
