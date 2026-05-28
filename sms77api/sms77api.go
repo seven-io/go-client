@@ -198,23 +198,23 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 		data = map[string]interface{}{}
 	}
 	data, _ = json.Marshal(&data)
-	json.Unmarshal(data.([]byte), &data)
+	_ = json.Unmarshal(data.([]byte), &data)
 
 	req, err := initClient()
 	if err != nil {
-		return "", fmt.Errorf("could not execute request! #1 (%s)", err.Error())
+		return "", fmt.Errorf("could not execute request! #1 (%w)", err)
 	}
 
 	res, err := api.client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("could not execute request! #2 (%s)", err.Error())
+		return "", fmt.Errorf("could not execute request! #2 (%w)", err)
 	}
 
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", fmt.Errorf("could not execute request! #3 (%s)", err.Error())
+		return "", fmt.Errorf("could not execute request! #3 (%w)", err)
 	}
 
 	str := strings.TrimSpace(string(body))
@@ -231,8 +231,8 @@ func (api *Sms77API) request(ctx context.Context, endpoint string, method string
 	}
 
 	if 2 == length || 3 == length {
-		code, msg := pickMapByKey(str, StatusCodes)
-		if nil != code {
+		code := StatusCode(str)
+		if msg, ok := StatusCodes[code]; ok {
 			return "", fmt.Errorf("%s: %s", code, msg)
 		}
 	}

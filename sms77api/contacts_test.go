@@ -2,9 +2,11 @@ package sms77api
 
 import (
 	"fmt"
-	a "github.com/stretchr/testify/assert"
+	"slices"
 	"strings"
 	"testing"
+
+	a "github.com/stretchr/testify/assert"
 )
 
 var createdId uint64
@@ -46,7 +48,8 @@ func getDeleteParams() ContactsDeleteParams {
 }
 
 func isValidCode(needle ContactsWriteCode) bool {
-	return inArray(needle, [...]ContactsWriteCode{ContactsWriteCodeUnchanged, ContactsWriteCodeChanged})
+	validCodes := []ContactsWriteCode{ContactsWriteCodeUnchanged, ContactsWriteCodeChanged}
+	return slices.Contains(validCodes, needle)
 }
 
 func prepareEdit() (Contact, string) {
